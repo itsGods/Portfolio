@@ -70,9 +70,9 @@ export default function About() {
               className="h-full w-full"
             >
               <img
-                src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000&auto=format&fit=crop"
-                alt="Creative Coding"
-                className="h-full w-full object-cover opacity-60 grayscale transition-all duration-700 hover:opacity-100 hover:grayscale-0"
+                src="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png"
+                alt="Habib - Slowly but Surely"
+                className="h-full w-full object-cover opacity-80 grayscale transition-all duration-700 hover:opacity-100 hover:grayscale-0"
                 referrerPolicy="no-referrer"
               />
             </motion.div>

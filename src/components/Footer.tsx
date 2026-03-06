@@ -1,10 +1,10 @@
 import { motion } from "motion/react";
 
 const socials = [
+  { name: "GitHub", url: "https://github.com/itsGods" },
+  { name: "Email", url: "mailto:itssolodev@gmail.com" },
   { name: "Twitter", url: "#" },
-  { name: "GitHub", url: "#" },
   { name: "LinkedIn", url: "#" },
-  { name: "Dribbble", url: "#" },
 ];
 
 export default function Footer() {

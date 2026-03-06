@@ -26,7 +26,7 @@ export default function Contact() {
             <span className="font-display not-italic font-bold text-brand-orange">Connect</span>
           </h2>
           <p className="max-w-md font-sans text-lg text-white/60">
-            Ready to build something extraordinary? Drop me a line and let's create the next big thing together.
+            Ready to build something extraordinary? Drop me a line at <a href="mailto:itssolodev@gmail.com" className="text-brand-orange transition-colors hover:text-white">itssolodev@gmail.com</a> or check out my <a href="https://github.com/itsGods" target="_blank" rel="noreferrer" className="text-brand-orange transition-colors hover:text-white">GitHub</a>. Let's create the next big thing together.
           </p>
         </motion.div>
 
