@@ -27,9 +27,9 @@ export default function Navbar() {
           hidden: { y: "-100%", opacity: 0 },
         }}
         animate={hidden && !isOpen ? "hidden" : "visible"}
-        transition={{ duration: 0.35, ease: "easeInOut" }}
-        className={`fixed top-0 z-50 w-full transition-all duration-300 ${
-          isTop || isOpen ? "py-8" : "py-4 glass-panel"
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className={`fixed top-0 z-50 w-full transition-[padding,background-color,border-color,backdrop-filter] duration-300 ${
+          isTop || isOpen ? "py-8 border-b border-transparent" : "py-4 glass-panel"
         }`}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 md:px-12">
@@ -67,20 +67,24 @@ export default function Navbar() {
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden text-white relative z-50"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              {isOpen ? (
-                <>
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </>
-              ) : (
-                <>
-                  <line x1="4" x2="20" y1="12" y2="12" />
-                  <line x1="4" x2="20" y1="6" y2="6" />
-                  <line x1="4" x2="20" y1="18" y2="18" />
-                </>
-              )}
-            </svg>
+            <motion.svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <motion.line
+                x1="4" x2="20" y1="6" y2="6"
+                animate={isOpen ? { x1: 6, x2: 18, y1: 6, y2: 18 } : { x1: 4, x2: 20, y1: 6, y2: 6 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              />
+              <motion.line
+                x1="4" x2="20" y1="12" y2="12"
+                animate={isOpen ? { opacity: 0, scale: 0 } : { opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                style={{ transformOrigin: "center" }}
+              />
+              <motion.line
+                x1="4" x2="20" y1="18" y2="18"
+                animate={isOpen ? { x1: 6, x2: 18, y1: 18, y2: 6 } : { x1: 4, x2: 20, y1: 18, y2: 18 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              />
+            </motion.svg>
           </motion.button>
         </div>
       </motion.nav>

@@ -11,6 +11,7 @@ export default function Hero() {
   const yFg = useTransform(scrollY, [0, 1000], [0, -150]);
   const scaleImage = useTransform(scrollY, [0, 800], [1, 1.1]);
   const opacityImage = useTransform(scrollY, [0, 600], [1, 0]);
+  const opacityScroll = useTransform(scrollY, [0, 150], [1, 0]);
 
   // Spring physics for mouse movement
   const springConfig = { damping: 30, stiffness: 50, mass: 0.5 };
@@ -31,8 +32,8 @@ export default function Hero() {
       mouseY.set(yPct * 30);
       
       // Tilt image
-      rotateX.set(yPct * -10); // Look up/down
-      rotateY.set(xPct * 10);  // Look left/right
+      rotateX.set(yPct * -15); // Look up/down
+      rotateY.set(xPct * 15);  // Look left/right
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -79,25 +80,27 @@ export default function Hero() {
         <motion.div
           animate={{ y: [0, -15, 0] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="relative flex h-full w-full items-center justify-center"
+          className="relative flex items-center justify-center"
         >
-          {/* Corner Brackets framing the image */}
-          <div className="absolute -left-4 -top-4 h-16 w-16 border-l-2 border-t-2 border-white/20" style={{ transform: "translateZ(30px)" }} />
-          <div className="absolute -right-4 -top-4 h-16 w-16 border-r-2 border-t-2 border-white/20" style={{ transform: "translateZ(30px)" }} />
-          <div className="absolute -bottom-4 -left-4 h-16 w-16 border-b-2 border-l-2 border-white/20" style={{ transform: "translateZ(30px)" }} />
-          <div className="absolute -bottom-4 -right-4 h-16 w-16 border-b-2 border-r-2 border-white/20" style={{ transform: "translateZ(30px)" }} />
+          <div className="relative inline-flex items-center justify-center">
+            {/* Corner Brackets framing the image */}
+            <div className="absolute -left-4 -top-4 h-16 w-16 border-l-2 border-t-2 border-white/20" style={{ transform: "translateZ(30px)" }} />
+            <div className="absolute -right-4 -top-4 h-16 w-16 border-r-2 border-t-2 border-white/20" style={{ transform: "translateZ(30px)" }} />
+            <div className="absolute -bottom-4 -left-4 h-16 w-16 border-b-2 border-l-2 border-white/20" style={{ transform: "translateZ(30px)" }} />
+            <div className="absolute -bottom-4 -right-4 h-16 w-16 border-b-2 border-r-2 border-white/20" style={{ transform: "translateZ(30px)" }} />
 
-          <img
-            src="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_000000006fd471fd89333f3da8a3d975%20(1).png"
-            alt="Habib Poster"
-            className="max-h-[85vh] w-full max-w-5xl object-contain drop-shadow-[0_0_50px_rgba(255,90,0,0.15)]"
-            style={{
-              // Feather the edges of the image so it blends seamlessly into the black background
-              maskImage: "radial-gradient(ellipse 95% 95% at 50% 50%, black 70%, transparent 100%)",
-              WebkitMaskImage: "radial-gradient(ellipse 95% 95% at 50% 50%, black 70%, transparent 100%)",
-            }}
-            referrerPolicy="no-referrer"
-          />
+            <img
+              src="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_000000006fd471fd89333f3da8a3d975%20(1).png"
+              alt="Habib Poster"
+              className="w-[90vw] max-w-6xl h-auto object-contain drop-shadow-[0_0_50px_rgba(255,90,0,0.15)]"
+              style={{
+                // Feather the edges of the image so it blends seamlessly into the black background
+                maskImage: "radial-gradient(ellipse 95% 95% at 50% 50%, black 70%, transparent 100%)",
+                WebkitMaskImage: "radial-gradient(ellipse 95% 95% at 50% 50%, black 70%, transparent 100%)",
+              }}
+              referrerPolicy="no-referrer"
+            />
+          </div>
         </motion.div>
       </motion.div>
 
@@ -107,8 +110,8 @@ export default function Hero() {
         className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
       >
         {/* Outline Typography Overlapping Image */}
-        <div className="absolute top-2/3 w-full text-center mix-blend-overlay opacity-50">
-          <span className="font-display text-[12vw] font-black tracking-tighter text-transparent" style={{ WebkitTextStroke: "2px rgba(255,255,255,0.8)" }}>
+        <div className="absolute top-[60%] w-full text-center mix-blend-overlay opacity-50">
+          <span className="font-display text-[15vw] font-black tracking-tighter text-transparent" style={{ WebkitTextStroke: "2px rgba(255,255,255,0.8)" }}>
             DEVELOPER
           </span>
         </div>
@@ -159,14 +162,16 @@ export default function Hero() {
         transition={{ duration: 1, delay: 1.5 }}
         className="absolute bottom-8 right-6 z-40 flex flex-col items-center gap-4 md:bottom-12 md:right-12"
       >
-        <span className="[writing-mode:vertical-rl] font-mono text-xs uppercase tracking-[0.2em] text-white/50">
-          Scroll
-        </span>
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-          className="h-12 w-[1px] bg-gradient-to-b from-brand-orange to-transparent"
-        />
+        <motion.div style={{ opacity: opacityScroll }} className="flex flex-col items-center gap-4">
+          <span className="[writing-mode:vertical-rl] font-mono text-xs uppercase tracking-[0.2em] text-white/50">
+            Scroll
+          </span>
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className="h-12 w-[1px] bg-gradient-to-b from-brand-orange to-transparent"
+          />
+        </motion.div>
       </motion.div>
     </section>
   );
