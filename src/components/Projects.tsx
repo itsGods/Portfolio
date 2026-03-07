@@ -70,7 +70,6 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
 
   return (
     <motion.div
-      layoutId={`project-container-${project.id}`}
       style={{
         rotateX,
         rotateY,
@@ -91,14 +90,15 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
         style={{ transform: "translateZ(30px)" }}
         className="relative h-3/4 w-full overflow-hidden rounded-xl bg-black"
       >
-        <motion.img
-          layoutId={`project-image-${project.id}`}
-          src={project.image}
-          alt={project.title}
-          className="h-full w-full object-cover opacity-50 grayscale transition-all duration-700 group-hover:scale-110 group-hover:opacity-100 group-hover:grayscale-0"
-          referrerPolicy="no-referrer"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+        <div className="h-full w-full transition-transform duration-700 group-hover:scale-110">
+          <img
+            src={project.image}
+            alt={project.title}
+            className="h-full w-full object-cover opacity-50 grayscale transition-[filter,opacity] duration-700 group-hover:opacity-100 group-hover:grayscale-0"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
         
         {/* Year Badge */}
         <div className="absolute right-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 font-mono text-[10px] text-white backdrop-blur-md transition-colors group-hover:border-brand-orange/50 group-hover:text-brand-orange">
@@ -113,13 +113,13 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
       >
         <div className="flex items-center gap-3 mb-3">
           <div className="h-[1px] w-6 bg-brand-orange transition-all duration-500 group-hover:w-12" />
-          <motion.p layoutId={`project-category-${project.id}`} className="font-mono text-[10px] uppercase tracking-[0.2em] text-brand-orange">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brand-orange">
             {project.category}
-          </motion.p>
+          </p>
         </div>
-        <motion.h3 layoutId={`project-title-${project.id}`} className="font-display text-3xl font-bold text-white md:text-4xl transition-transform duration-500 group-hover:translate-x-2">
-          {project.title}
-        </motion.h3>
+        <h3 className="font-display text-3xl font-bold text-white md:text-4xl">
+          <span className="inline-block transition-transform duration-500 group-hover:translate-x-2">{project.title}</span>
+        </h3>
         
         {/* Animated Description */}
         <div className="grid grid-rows-[0fr] overflow-hidden transition-all duration-500 group-hover:grid-rows-[1fr]">
@@ -196,11 +196,14 @@ export default function Projects() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-brand-black/95 p-4 backdrop-blur-2xl md:p-12"
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-brand-black/95 p-4 md:p-12"
           >
             <motion.div
-              layoutId={`project-container-${selectedProject.id}`}
+              initial={{ scale: 0.9, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 20, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="relative flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl bg-brand-dark border border-white/10 shadow-2xl md:flex-row"
             >
               {/* Close Button */}
@@ -208,7 +211,7 @@ export default function Projects() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.1 }}
                 onClick={() => setSelectedProject(null)}
                 className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md transition-all hover:bg-brand-orange hover:rotate-90 md:right-6 md:top-6 md:h-12 md:w-12"
               >
@@ -220,35 +223,34 @@ export default function Projects() {
 
               {/* Image Section */}
               <div className="relative h-64 w-full overflow-hidden md:h-auto md:w-1/2">
-                <motion.img
-                  layoutId={`project-image-${selectedProject.id}`}
+                <img
                   src={selectedProject.image}
                   alt={selectedProject.title}
                   className="h-full w-full object-cover"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent md:bg-gradient-to-r" />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent md:bg-gradient-to-r pointer-events-none" />
               </div>
 
               {/* Content Section */}
               <div className="flex w-full flex-col justify-center overflow-y-auto p-6 md:w-1/2 md:p-16">
                 <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
                 >
                   <div className="mb-4 flex items-center gap-4 md:mb-6">
-                    <motion.p layoutId={`project-category-${selectedProject.id}`} className="font-mono text-xs uppercase tracking-widest text-brand-orange">
+                    <p className="font-mono text-xs uppercase tracking-widest text-brand-orange">
                       {selectedProject.category}
-                    </motion.p>
+                    </p>
                     <span className="h-1 w-1 rounded-full bg-white/30" />
                     <p className="font-mono text-xs text-white/50">{selectedProject.year}</p>
                   </div>
                   
-                  <motion.h3 layoutId={`project-title-${selectedProject.id}`} className="mb-6 font-display text-3xl font-bold text-white md:mb-8 md:text-6xl">
+                  <h3 className="mb-6 font-display text-3xl font-bold text-white md:mb-8 md:text-6xl">
                     {selectedProject.title}
-                  </motion.h3>
+                  </h3>
                   
                   <div className="mb-6 h-[1px] w-full bg-white/10 md:mb-8" />
                   
