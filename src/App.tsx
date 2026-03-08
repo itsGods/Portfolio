@@ -9,6 +9,7 @@ import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import Grain from "./components/Grain";
 import Particles from "./components/Particles";
+import CustomCursor from "./components/CustomCursor";
 
 export default function App() {
   useEffect(() => {
@@ -35,7 +36,8 @@ export default function App() {
   }, []);
 
   return (
-    <main className="relative bg-brand-black text-brand-light selection:bg-brand-orange selection:text-white">
+    <main className="relative bg-brand-black text-brand-light selection:bg-brand-orange selection:text-white md:cursor-none">
+      <CustomCursor />
       <Grain />
       <Particles />
       <Navbar />
