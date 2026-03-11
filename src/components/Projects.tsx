@@ -4,39 +4,80 @@ import React, { useState, useEffect } from "react";
 const projects = [
   {
     id: 1,
+    title: "Solo Dev",
+    category: "Full Stack Blog",
+    year: "2026",
+    role: "Vibecoder",
+    image: "https://raw.githubusercontent.com/itsGods/Blog-asset/refs/heads/main/IMG_20260311_152508.jpg",
+    description: "A full-stack personal blog site made with Vibe coding. It features a complete backend powered by Supabase for managing posts and content.",
+    techStack: "React, Supabase, Tailwind",
+    link: "https://habibul.online"
+  },
+  {
+    id: 2,
+    title: "Bio Link",
+    category: "Linktree Clone",
+    year: "2026",
+    role: "Vibecoder",
+    image: "https://raw.githubusercontent.com/itsGods/Blog-asset/refs/heads/main/file_00000000d64c7208bc19a1c1f34f3e0c.png",
+    description: "A completely free and easy-to-use full-stack Linktree clone. Built entirely with Vibe coding, allowing users to create and manage their personalized bio links seamlessly.",
+    techStack: "React, Node.js, Tailwind",
+    link: "https://biolink.us.cc"
+  },
+  {
+    id: 3,
+    title: "Atpukur Boys",
+    category: "Messaging App",
+    year: "2026",
+    role: "Full Stack",
+    image: "https://raw.githubusercontent.com/itsGods/Blog-asset/refs/heads/main/file_0000000040ac720b9327bdd5ddd9ae92.png",
+    description: "A full-stack messaging app with powerful admin controls. It features end-to-end encryption and group messaging, built exclusively for the Atpukur gang.",
+    techStack: "React, Node.js, WebSockets",
+    link: "https://atpukurboys.qzz.io/"
+  },
+  {
+    id: 4,
     title: "Neon Genesis",
     category: "WebGL Experience",
     year: "2026",
     role: "Creative Developer",
     image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop",
     description: "An immersive 3D journey through a cyberpunk cityscape built with Three.js and React Three Fiber. This project explores the intersection of real-time rendering and cinematic lighting.",
+    techStack: "React, Three.js, GSAP",
+    link: "#"
   },
   {
-    id: 2,
+    id: 5,
     title: "Aura Flow",
     category: "Creative Coding",
     year: "2025",
     role: "Vibecoder",
     image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000&auto=format&fit=crop",
     description: "Generative art platform exploring fluid dynamics and particle systems in real-time. Users can interact with the simulation using their webcam and hand gestures.",
+    techStack: "WebGL, GLSL, React",
+    link: "#"
   },
   {
-    id: 3,
+    id: 6,
     title: "Vibe Check",
     category: "Interactive App",
     year: "2025",
     role: "Full Stack",
     image: "https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=1000&auto=format&fit=crop",
     description: "A social platform for sharing moods through abstract visual representations and soundscapes. Built with Next.js, Framer Motion, and Web Audio API.",
+    techStack: "Next.js, Framer Motion, Web Audio",
+    link: "#"
   },
   {
-    id: 4,
+    id: 7,
     title: "Dark Matter",
     category: "E-Commerce",
     year: "2024",
     role: "Frontend Lead",
     image: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=1000&auto=format&fit=crop",
     description: "High-end streetwear brand website featuring cinematic scroll animations and 3D product viewers. Awarded Site of the Day on Awwwards.",
+    techStack: "React, Three.js, Tailwind",
+    link: "#"
   },
 ];
 
@@ -261,7 +302,7 @@ export default function Projects() {
                     </div>
                     <div>
                       <p className="mb-1 font-mono text-[10px] uppercase tracking-widest text-white/40 md:mb-2">Tech Stack</p>
-                      <p className="font-sans text-sm text-white">React, Three.js, GSAP</p>
+                      <p className="font-sans text-sm text-white">{selectedProject.techStack || "React, Three.js, GSAP"}</p>
                     </div>
                   </div>
 
@@ -271,7 +312,7 @@ export default function Projects() {
                     <span className="hidden md:inline">This project showcases advanced techniques in creative coding, focusing on performance, aesthetics, and user interaction to deliver a memorable digital experience.</span>
                   </p>
                   
-                  <a href="#" className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full border border-white/20 bg-transparent px-8 py-4 font-mono text-sm uppercase tracking-widest text-white transition-all hover:border-brand-orange md:w-max">
+                  <a href={selectedProject.link || "#"} target={selectedProject.link && selectedProject.link !== "#" ? "_blank" : "_self"} rel="noopener noreferrer" className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full border border-white/20 bg-transparent px-8 py-4 font-mono text-sm uppercase tracking-widest text-white transition-all hover:border-brand-orange md:w-max">
                     <span className="relative z-10 transition-colors group-hover:text-black">View Live Site</span>
                     <div className="absolute inset-0 -z-0 h-full w-full translate-y-full bg-brand-orange transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:translate-y-0" />
                   </a>

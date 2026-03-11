@@ -40,12 +40,6 @@ export default function Navbar() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="group relative z-50 flex items-center gap-2 font-display text-xl font-bold tracking-tighter text-white"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-black transition-transform duration-500 group-hover:rotate-90">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-              </svg>
-            </div>
             HABIB<span className="text-brand-orange">.</span>
           </motion.div>
 
@@ -79,24 +73,24 @@ export default function Navbar() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.8 }}
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden text-white relative z-50 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
+            className="md:hidden text-white relative z-50 flex h-12 w-12 items-center justify-center"
           >
-            <motion.svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <motion.svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <motion.line
                 x1="4" x2="20" y1="6" y2="6"
                 animate={isOpen ? { x1: 6, x2: 18, y1: 6, y2: 18 } : { x1: 4, x2: 20, y1: 6, y2: 6 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
               />
               <motion.line
                 x1="4" x2="20" y1="12" y2="12"
                 animate={isOpen ? { opacity: 0, scale: 0 } : { opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
                 style={{ transformOrigin: "center" }}
               />
               <motion.line
                 x1="4" x2="20" y1="18" y2="18"
                 animate={isOpen ? { x1: 6, x2: 18, y1: 18, y2: 6 } : { x1: 4, x2: 20, y1: 18, y2: 18 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
               />
             </motion.svg>
           </motion.button>
@@ -110,7 +104,7 @@ export default function Navbar() {
             initial={{ opacity: 0, clipPath: "circle(0% at 100% 0)" }}
             animate={{ opacity: 1, clipPath: "circle(150% at 100% 0)" }}
             exit={{ opacity: 0, clipPath: "circle(0% at 100% 0)" }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
             className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-brand-black/98 md:hidden"
           >
             {/* Cinematic Background Elements */}
@@ -125,7 +119,7 @@ export default function Navbar() {
                   initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.5, delay: 0.2 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 0.7, delay: 0.1 + i * 0.1, ease: [0.76, 0, 0.24, 1] }}
                   className="overflow-hidden"
                 >
                   <a

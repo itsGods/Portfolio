@@ -79,7 +79,7 @@ export default function Skills() {
           <div className="mb-8 flex items-center gap-4">
             <div className="h-[1px] w-8 bg-brand-orange" />
             <h2 className="font-mono text-xs uppercase tracking-[0.3em] text-brand-orange">
-              Capabilities
+              CAPABILITIES // 03
             </h2>
           </div>
 
@@ -105,15 +105,26 @@ export default function Skills() {
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
               className="absolute inset-0 rounded-full border border-dashed border-brand-orange/30"
             />
-            <span className="font-mono text-[10px] text-white/40">SYS.RDY</span>
+            <motion.div 
+              animate={{ rotate: -360 }} 
+              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-2 rounded-full border border-white/5"
+            />
+            <span className="font-mono text-[10px] text-brand-orange animate-pulse">SYS.RDY</span>
           </div>
         </motion.div>
 
         {/* Right: Skills Visualization */}
-        <div className="w-full flex-1 md:w-auto relative">
+        <div className="w-full flex-1 md:w-auto relative p-8 bg-black/20 border border-white/5 backdrop-blur-sm rounded-xl">
           {/* HUD Brackets */}
-          <div className="absolute -left-8 -top-8 h-16 w-16 border-l border-t border-white/20 hidden md:block" />
-          <div className="absolute -bottom-8 -right-8 h-16 w-16 border-b border-r border-white/20 hidden md:block" />
+          <div className="absolute -left-2 -top-2 h-8 w-8 border-l-2 border-t-2 border-brand-orange/50" />
+          <div className="absolute -right-2 -top-2 h-8 w-8 border-r-2 border-t-2 border-brand-orange/50" />
+          <div className="absolute -bottom-2 -left-2 h-8 w-8 border-b-2 border-l-2 border-brand-orange/50" />
+          <div className="absolute -bottom-2 -right-2 h-8 w-8 border-b-2 border-r-2 border-brand-orange/50" />
+          
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-dark px-4 font-mono text-[10px] text-brand-orange tracking-widest">
+            DIAGNOSTICS
+          </div>
           
           <div className="relative z-10">
             {skills.map((skill, i) => (

@@ -29,7 +29,7 @@ export default function Contact() {
           <div className="mb-8 flex items-center gap-4">
             <div className="h-[1px] w-8 bg-brand-orange" />
             <h2 className="font-mono text-xs uppercase tracking-[0.3em] text-brand-orange">
-              Initiate Contact
+              SECURE UPLINK // 04
             </h2>
           </div>
 
@@ -63,9 +63,19 @@ export default function Contact() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full flex-1 space-y-8 md:w-auto"
+          className="relative w-full flex-1 space-y-8 md:w-auto bg-black/40 p-8 border border-white/10 backdrop-blur-md"
           onSubmit={(e) => e.preventDefault()}
         >
+          {/* Tech Brackets */}
+          <div className="absolute -left-2 -top-2 h-6 w-6 border-l-2 border-t-2 border-brand-orange/50" />
+          <div className="absolute -right-2 -top-2 h-6 w-6 border-r-2 border-t-2 border-brand-orange/50" />
+          <div className="absolute -bottom-2 -left-2 h-6 w-6 border-b-2 border-l-2 border-brand-orange/50" />
+          <div className="absolute -bottom-2 -right-2 h-6 w-6 border-b-2 border-r-2 border-brand-orange/50" />
+          
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-dark px-4 font-mono text-[10px] text-brand-orange tracking-widest flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand-orange animate-pulse" />
+            TERMINAL
+          </div>
           <div className="relative group">
             <input
               type="text"
@@ -76,14 +86,14 @@ export default function Contact() {
               onFocus={() => setFocusedInput('name')}
               onBlur={() => setFocusedInput(null)}
               required
-              className="peer w-full border-b border-white/20 bg-transparent py-4 font-mono text-sm text-white placeholder-transparent transition-colors focus:border-brand-orange focus:outline-none"
+              className="peer w-full border-b border-white/20 bg-transparent py-4 font-mono text-sm text-white placeholder-transparent transition-colors focus:border-brand-orange focus:outline-none focus:bg-white/5 px-2"
               placeholder="Name"
             />
             <label
               htmlFor="name"
-              className="absolute left-0 top-4 -translate-y-6 font-mono text-xs uppercase tracking-widest text-brand-orange transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-white/50 peer-focus:-translate-y-6 peer-focus:text-brand-orange"
+              className="absolute left-2 top-4 -translate-y-6 font-mono text-xs uppercase tracking-widest text-brand-orange transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-white/50 peer-focus:-translate-y-6 peer-focus:text-brand-orange"
             >
-              Name
+              &gt; Name_
             </label>
             <motion.div 
               initial={{ scaleX: 0 }}
@@ -103,14 +113,14 @@ export default function Contact() {
               onFocus={() => setFocusedInput('email')}
               onBlur={() => setFocusedInput(null)}
               required
-              className="peer w-full border-b border-white/20 bg-transparent py-4 font-mono text-sm text-white placeholder-transparent transition-colors focus:border-brand-orange focus:outline-none"
+              className="peer w-full border-b border-white/20 bg-transparent py-4 font-mono text-sm text-white placeholder-transparent transition-colors focus:border-brand-orange focus:outline-none focus:bg-white/5 px-2"
               placeholder="Email"
             />
             <label
               htmlFor="email"
-              className="absolute left-0 top-4 -translate-y-6 font-mono text-xs uppercase tracking-widest text-brand-orange transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-white/50 peer-focus:-translate-y-6 peer-focus:text-brand-orange"
+              className="absolute left-2 top-4 -translate-y-6 font-mono text-xs uppercase tracking-widest text-brand-orange transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-white/50 peer-focus:-translate-y-6 peer-focus:text-brand-orange"
             >
-              Email
+              &gt; Email_
             </label>
             <motion.div 
               initial={{ scaleX: 0 }}
@@ -130,14 +140,14 @@ export default function Contact() {
               onBlur={() => setFocusedInput(null)}
               required
               rows={4}
-              className="peer w-full resize-none border-b border-white/20 bg-transparent py-4 font-mono text-sm text-white placeholder-transparent transition-colors focus:border-brand-orange focus:outline-none"
+              className="peer w-full resize-none border-b border-white/20 bg-transparent py-4 font-mono text-sm text-white placeholder-transparent transition-colors focus:border-brand-orange focus:outline-none focus:bg-white/5 px-2"
               placeholder="Message"
             />
             <label
               htmlFor="message"
-              className="absolute left-0 top-4 -translate-y-6 font-mono text-xs uppercase tracking-widest text-brand-orange transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-white/50 peer-focus:-translate-y-6 peer-focus:text-brand-orange"
+              className="absolute left-2 top-4 -translate-y-6 font-mono text-xs uppercase tracking-widest text-brand-orange transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-white/50 peer-focus:-translate-y-6 peer-focus:text-brand-orange"
             >
-              Message
+              &gt; Message_
             </label>
             <motion.div 
               initial={{ scaleX: 0 }}

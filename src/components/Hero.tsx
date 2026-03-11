@@ -110,10 +110,25 @@ export default function Hero() {
         className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
       >
         {/* Outline Typography Overlapping Image */}
-        <div className="absolute top-[60%] w-full text-center mix-blend-overlay opacity-50">
-          <span className="font-display text-[15vw] font-black tracking-tighter text-transparent" style={{ WebkitTextStroke: "2px rgba(255,255,255,0.8)" }}>
-            DEVELOPER
-          </span>
+        <div className="absolute top-[60%] w-full text-center mix-blend-screen opacity-90">
+          <div className="relative inline-block">
+            {/* Dark Base */}
+            <span className="font-display text-[15vw] font-black tracking-tighter cyber-base">
+              DEVELOPER
+            </span>
+            {/* Subtle Glitch Overlay */}
+            <span className="absolute left-0 top-0 font-display text-[15vw] font-black tracking-tighter cyber-glitch pointer-events-none">
+              DEVELOPER
+            </span>
+            {/* Laser Scanline Glow (Blurred) */}
+            <span className="absolute left-0 top-0 font-display text-[15vw] font-black tracking-tighter cyber-scanline pointer-events-none blur-[12px] opacity-70">
+              DEVELOPER
+            </span>
+            {/* Laser Scanline (Sharp) */}
+            <span className="absolute left-0 top-0 font-display text-[15vw] font-black tracking-tighter cyber-scanline pointer-events-none">
+              DEVELOPER
+            </span>
+          </div>
         </div>
 
         {/* Floating Tech Data - Top Left */}

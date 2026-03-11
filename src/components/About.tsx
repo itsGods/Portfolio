@@ -27,7 +27,7 @@ export default function About() {
           <div className="mb-8 flex items-center gap-4">
             <div className="h-[1px] w-8 bg-brand-orange" />
             <h2 className="font-mono text-xs uppercase tracking-[0.3em] text-brand-orange">
-              About Habib
+              IDENTITY // 01
             </h2>
           </div>
           
@@ -42,9 +42,23 @@ export default function About() {
                 className="inline-block mr-[0.25em]"
               >
                 {word === "Vibecoder" || word === "Creative" || word === "Developer," ? (
-                  <span className="font-display font-bold italic text-brand-orange relative">
+                  <span className="font-display font-bold italic text-brand-orange relative group">
                     {word}
                     <span className="absolute -bottom-2 left-0 h-[2px] w-full bg-brand-orange/30" />
+                    <motion.span 
+                      className="absolute left-0 top-0 text-white/20 mix-blend-overlay pointer-events-none"
+                      animate={{ 
+                        opacity: [0, 1, 0, 0.5, 0],
+                        x: [0, -2, 2, -1, 0]
+                      }}
+                      transition={{ 
+                        duration: 0.2, 
+                        repeat: Infinity,
+                        repeatDelay: 2 + Math.random() * 2
+                      }}
+                    >
+                      {word}
+                    </motion.span>
                   </span>
                 ) : (
                   word
@@ -95,8 +109,19 @@ export default function About() {
             </motion.div>
             
             {/* Decorative Elements */}
-            <div className="absolute -left-4 -top-4 h-32 w-32 border-l-2 border-t-2 border-brand-orange/30 transition-all duration-500 group-hover:-left-6 group-hover:-top-6 group-hover:border-brand-orange" />
-            <div className="absolute -bottom-4 -right-4 h-32 w-32 border-b-2 border-r-2 border-brand-orange/30 transition-all duration-500 group-hover:-bottom-6 group-hover:-right-6 group-hover:border-brand-orange" />
+            <div className="absolute -inset-2 z-0 border border-white/5 bg-white/[0.02] backdrop-blur-sm transition-colors duration-500 group-hover:border-brand-orange/20 group-hover:bg-brand-orange/[0.02]" />
+            
+            <div className="absolute -left-4 -top-4 h-8 w-8 border-l-2 border-t-2 border-brand-orange/50 transition-all duration-500 group-hover:-left-6 group-hover:-top-6 group-hover:border-brand-orange" />
+            <div className="absolute -right-4 -top-4 h-8 w-8 border-r-2 border-t-2 border-brand-orange/50 transition-all duration-500 group-hover:-right-6 group-hover:-top-6 group-hover:border-brand-orange" />
+            <div className="absolute -bottom-4 -left-4 h-8 w-8 border-b-2 border-l-2 border-brand-orange/50 transition-all duration-500 group-hover:-bottom-6 group-hover:-left-6 group-hover:border-brand-orange" />
+            <div className="absolute -bottom-4 -right-4 h-8 w-8 border-b-2 border-r-2 border-brand-orange/50 transition-all duration-500 group-hover:-bottom-6 group-hover:-right-6 group-hover:border-brand-orange" />
+            
+            {/* Holographic Scanline */}
+            <motion.div 
+              className="absolute inset-0 z-20 bg-gradient-to-b from-transparent via-brand-orange/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none"
+              animate={{ y: ["-100%", "200%"] }}
+              transition={{ duration: 3, ease: "linear", repeat: Infinity }}
+            />
             
             {/* Floating Badge */}
             <motion.div 
