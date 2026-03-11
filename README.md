@@ -1,20 +1,34 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Professional Portfolio
 
-# Run and deploy your AI Studio app
+Welcome to my professional portfolio! This document showcases my skills, projects, and technologies I work with, aimed at providing insight into my capabilities as a developer.
 
-This contains everything you need to run your app locally.
+## Table of Contents
+1. [Projects](#projects)
+2. [Technologies](#technologies)
+3. [Skills](#skills)
+4. [Contact Information](#contact-information)
 
-View your app in AI Studio: https://ai.studio/apps/9b8a817a-c0b3-4eb6-a24e-ec5bd5bb6427
+## Projects
+- **Project 1**: A brief description of Project 1, highlighting its features and technologies used.
+- **Project 2**: A brief description of Project 2, mentioning the challenges faced and the solutions implemented.
+- **Project 3**: A brief description of Project 3, emphasizing the impact it had on users or businesses.
 
-## Run Locally
+## Technologies
+- **TypeScript**: Utilized for developing scalable and maintainable applications.
+- **CSS**: Applied for elegant and responsive design.
+- **HTML**: The backbone of all web pages created in this portfolio.
 
-**Prerequisites:**  Node.js
+## Skills
+- Front-End Development
+- Responsive Design
+- Web Accessibility
+- Performance Optimization
+- Version Control with Git
 
+## Contact Information
+Feel free to reach out via the following channels:
+- **Email**: youremail@example.com
+- **LinkedIn**: [Your LinkedIn Profile](https://www.linkedin.com/in/yourprofile)
+- **GitHub**: [Your GitHub Profile](https://github.com/itsGods)
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Thank you for visiting my portfolio!
