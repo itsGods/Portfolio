@@ -8,7 +8,8 @@ const projects = [
     category: "Full Stack Blog",
     year: "2026",
     role: "Vibecoder",
-    image: "https://raw.githubusercontent.com/itsGods/Blog-asset/refs/heads/main/IMG_20260311_152508.jpg",
+    image: "https://res.cloudinary.com/djo33javr/image/upload/v1773247850/Google_play_store_feature_graphic_1024x500_for_a_d_delpmaspu_3_t8i8em.jpg",
+    landscapeImage: "https://res.cloudinary.com/djo33javr/image/upload/v1773247850/Google_play_store_feature_graphic_1024x500_for_a_d_delpmaspu_2_hri9am.jpg",
     description: "A full-stack personal blog site made with Vibe coding. It features a complete backend powered by Supabase for managing posts and content.",
     techStack: "React, Supabase, Tailwind",
     link: "https://habibul.online"
@@ -19,7 +20,8 @@ const projects = [
     category: "Linktree Clone",
     year: "2026",
     role: "Vibecoder",
-    image: "https://raw.githubusercontent.com/itsGods/Blog-asset/refs/heads/main/file_00000000d64c7208bc19a1c1f34f3e0c.png",
+    image: "https://res.cloudinary.com/djo33javr/image/upload/v1773247852/Create_a_google_play_store_feature_graphic_1024x50_delpmaspu_ttvbcd.jpg",
+    landscapeImage: "https://res.cloudinary.com/djo33javr/image/upload/v1773247850/Create_a_google_play_store_feature_graphic_1024x50_delpmaspu_1_sg99pr.jpg",
     description: "A completely free and easy-to-use full-stack Linktree clone. Built entirely with Vibe coding, allowing users to create and manage their personalized bio links seamlessly.",
     techStack: "React, Node.js, Tailwind",
     link: "https://biolink.us.cc"
@@ -31,6 +33,7 @@ const projects = [
     year: "2026",
     role: "Full Stack",
     image: "https://raw.githubusercontent.com/itsGods/Blog-asset/refs/heads/main/file_0000000040ac720b9327bdd5ddd9ae92.png",
+    landscapeImage: "https://res.cloudinary.com/djo33javr/image/upload/v1773247849/Create_an_image_play_store_feature_graphic_1024x50_delpmaspu_uogfy8.jpg",
     description: "A full-stack messaging app with powerful admin controls. It features end-to-end encryption and group messaging, built exclusively for the Atpukur gang.",
     techStack: "React, Node.js, WebSockets",
     link: "https://atpukurboys.qzz.io/"
@@ -132,12 +135,17 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
         className="relative h-3/4 w-full overflow-hidden rounded-xl bg-black"
       >
         <div className="h-full w-full transition-transform duration-700 group-hover:scale-110">
-          <img
-            src={project.image}
-            alt={project.title}
-            className="h-full w-full object-cover opacity-50 grayscale transition-[filter,opacity] duration-700 group-hover:opacity-100 group-hover:grayscale-0"
-            referrerPolicy="no-referrer"
-          />
+          <picture className="block h-full w-full">
+            {project.landscapeImage && (
+              <source media="(orientation: landscape)" srcSet={project.landscapeImage} />
+            )}
+            <img
+              src={project.image}
+              alt={project.title}
+              className="h-full w-full object-cover opacity-50 grayscale transition-[filter,opacity] duration-700 group-hover:opacity-100 group-hover:grayscale-0"
+              referrerPolicy="no-referrer"
+            />
+          </picture>
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
         
@@ -264,12 +272,17 @@ export default function Projects() {
 
               {/* Image Section */}
               <div className="relative h-64 w-full overflow-hidden md:h-auto md:w-1/2">
-                <img
-                  src={selectedProject.image}
-                  alt={selectedProject.title}
-                  className="h-full w-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
+                <picture className="block h-full w-full">
+                  {selectedProject.landscapeImage && (
+                    <source media="(orientation: landscape)" srcSet={selectedProject.landscapeImage} />
+                  )}
+                  <img
+                    src={selectedProject.image}
+                    alt={selectedProject.title}
+                    className="h-full w-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </picture>
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent md:bg-gradient-to-r pointer-events-none" />
               </div>
 
