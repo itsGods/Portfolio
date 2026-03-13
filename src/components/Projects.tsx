@@ -123,7 +123,7 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
-      className="group relative aspect-[4/5] w-full cursor-pointer rounded-2xl bg-brand-dark p-6 transition-colors hover:bg-brand-gray"
+      className="group relative flex w-full flex-col gap-6 cursor-pointer rounded-2xl bg-brand-dark p-6 transition-colors hover:bg-brand-gray"
     >
       {/* Glowing Border */}
       <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-brand-orange/0 via-brand-orange/0 to-brand-orange/0 opacity-0 blur-xl transition-all duration-700 group-hover:from-brand-orange/30 group-hover:via-brand-orange/10 group-hover:to-transparent group-hover:opacity-100" />
@@ -132,13 +132,10 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
       {/* Image Container */}
       <div
         style={{ transform: "translateZ(30px)" }}
-        className="relative h-3/4 w-full overflow-hidden rounded-xl bg-black"
+        className="relative aspect-[2/1] w-full overflow-hidden rounded-xl bg-black"
       >
         <div className="h-full w-full transition-transform duration-700 group-hover:scale-110">
           <picture className="block h-full w-full">
-            {project.landscapeImage && (
-              <source media="(orientation: landscape)" srcSet={project.landscapeImage} />
-            )}
             <img
               src={project.image}
               alt={project.title}
@@ -158,7 +155,7 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
       {/* Content */}
       <div
         style={{ transform: "translateZ(50px)" }}
-        className="absolute bottom-6 left-6 right-6"
+        className="flex flex-col"
       >
         <div className="flex items-center gap-3 mb-3">
           <div className="h-[1px] w-6 bg-brand-orange transition-all duration-500 group-hover:w-12" />
@@ -253,7 +250,7 @@ export default function Projects() {
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.9, y: 20, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl bg-brand-dark border border-white/10 shadow-2xl md:flex-row"
+              className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl bg-brand-dark border border-white/10 shadow-2xl"
             >
               {/* Close Button */}
               <motion.button
@@ -271,11 +268,8 @@ export default function Projects() {
               </motion.button>
 
               {/* Image Section */}
-              <div className="relative h-64 w-full overflow-hidden md:h-auto md:w-1/2">
+              <div className="relative aspect-[2/1] w-full shrink-0 overflow-hidden bg-black">
                 <picture className="block h-full w-full">
-                  {selectedProject.landscapeImage && (
-                    <source media="(orientation: landscape)" srcSet={selectedProject.landscapeImage} />
-                  )}
                   <img
                     src={selectedProject.image}
                     alt={selectedProject.title}
@@ -283,11 +277,11 @@ export default function Projects() {
                     referrerPolicy="no-referrer"
                   />
                 </picture>
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent md:bg-gradient-to-r pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent pointer-events-none" />
               </div>
 
               {/* Content Section */}
-              <div className="flex w-full flex-col justify-center overflow-y-auto p-6 md:w-1/2 md:p-16">
+              <div className="flex w-full flex-col overflow-y-auto p-6 md:p-12">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
