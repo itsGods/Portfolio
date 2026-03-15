@@ -9,6 +9,7 @@ import Contact from "../components/Contact";
 import Footer from "../components/Footer";
 import Grain from "../components/Grain";
 import Particles from "../components/Particles";
+import PageTransition from "../components/PageTransition";
 import CustomCursor from "../components/CustomCursor";
 
 export default function Home() {
@@ -36,17 +37,19 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative bg-brand-black text-brand-light selection:bg-brand-orange selection:text-white md:cursor-none">
-      <CustomCursor />
-      <Grain />
-      <Particles />
-      <Navbar />
-      <Hero />
-      <About />
-      <Projects />
-      <Skills />
-      <Contact />
-      <Footer />
-    </main>
+    <PageTransition>
+      <main className="relative bg-brand-black text-brand-light selection:bg-brand-orange selection:text-white md:cursor-none">
+        <CustomCursor />
+        <Grain />
+        <Particles />
+        <Navbar />
+        <Hero />
+        <About />
+        <Projects />
+        <Skills />
+        <Contact />
+        <Footer />
+      </main>
+    </PageTransition>
   );
 }

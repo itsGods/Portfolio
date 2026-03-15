@@ -96,6 +96,7 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
   const scale = useTransform(mouseYSpring, [-0.5, 0.5], [1, 1.02]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (window.innerWidth < 768) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;
@@ -108,6 +109,7 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
   };
 
   const handleMouseLeave = () => {
+    if (window.innerWidth < 768) return;
     x.set(0);
     y.set(0);
   };
@@ -123,23 +125,23 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
-      className="group relative flex w-full flex-col gap-6 cursor-pointer rounded-2xl bg-brand-dark p-6 transition-colors hover:bg-brand-gray"
+      className="group relative flex w-full flex-col gap-6 cursor-pointer rounded-2xl bg-brand-dark p-6 transition-colors md:hover:bg-brand-gray [-webkit-tap-highlight-color:transparent]"
     >
       {/* Glowing Border */}
-      <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-brand-orange/0 via-brand-orange/0 to-brand-orange/0 opacity-0 blur-xl transition-all duration-700 group-hover:from-brand-orange/30 group-hover:via-brand-orange/10 group-hover:to-transparent group-hover:opacity-100" />
-      <div className="absolute inset-0 rounded-2xl border border-white/5 transition-colors duration-500 group-hover:border-brand-orange/30" />
+      <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-brand-orange/0 via-brand-orange/0 to-brand-orange/0 opacity-0 blur-xl transition-all duration-700 md:group-hover:from-brand-orange/30 md:group-hover:via-brand-orange/10 md:group-hover:to-transparent md:group-hover:opacity-100" />
+      <div className="absolute inset-0 rounded-2xl border border-white/5 transition-colors duration-500 md:group-hover:border-brand-orange/30" />
 
       {/* Image Container */}
       <div
         style={{ transform: "translateZ(30px)" }}
         className="relative aspect-[2/1] w-full overflow-hidden rounded-xl bg-black"
       >
-        <div className="h-full w-full transition-transform duration-700 group-hover:scale-110">
+        <div className="h-full w-full transition-transform duration-700 md:group-hover:scale-110">
           <picture className="block h-full w-full">
             <img
               src={project.image}
               alt={project.title}
-              className="h-full w-full object-cover opacity-50 grayscale transition-[filter,opacity] duration-700 group-hover:opacity-100 group-hover:grayscale-0"
+              className="h-full w-full object-cover opacity-50 grayscale transition-[filter,opacity] duration-700 md:group-hover:opacity-100 md:group-hover:grayscale-0"
               referrerPolicy="no-referrer"
             />
           </picture>
@@ -147,7 +149,7 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
         
         {/* Year Badge */}
-        <div className="absolute right-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 font-mono text-[10px] text-white backdrop-blur-md transition-colors group-hover:border-brand-orange/50 group-hover:text-brand-orange">
+        <div className="absolute right-4 top-4 rounded-full border border-white/20 bg-black/50 px-3 py-1 font-mono text-[10px] text-white backdrop-blur-md transition-colors md:group-hover:border-brand-orange/50 md:group-hover:text-brand-orange">
           {project.year}
         </div>
       </div>
@@ -158,18 +160,18 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
         className="flex flex-col"
       >
         <div className="flex items-center gap-3 mb-3">
-          <div className="h-[1px] w-6 bg-brand-orange transition-all duration-500 group-hover:w-12" />
+          <div className="h-[1px] w-6 bg-brand-orange transition-all duration-500 md:group-hover:w-12" />
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brand-orange">
             {project.category}
           </p>
         </div>
         <h3 className="font-display text-3xl font-bold text-white md:text-4xl">
-          <span className="inline-block transition-transform duration-500 group-hover:translate-x-2">{project.title}</span>
+          <span className="inline-block transition-transform duration-500 md:group-hover:translate-x-2">{project.title}</span>
         </h3>
         
         {/* Animated Description */}
-        <div className="grid grid-rows-[0fr] overflow-hidden transition-all duration-500 group-hover:grid-rows-[1fr]">
-          <p className="min-h-0 pt-4 font-sans text-sm text-white/60 opacity-0 transition-opacity duration-500 delay-100 group-hover:opacity-100 line-clamp-2">
+        <div className="grid grid-rows-[0fr] overflow-hidden transition-all duration-500 md:group-hover:grid-rows-[1fr]">
+          <p className="min-h-0 pt-4 font-sans text-sm text-white/60 opacity-0 transition-opacity duration-500 delay-100 md:group-hover:opacity-100 line-clamp-2">
             {project.description}
           </p>
         </div>
@@ -259,7 +261,7 @@ export default function Projects() {
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ delay: 0.1 }}
                 onClick={() => setSelectedProject(null)}
-                className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md transition-all hover:bg-brand-orange hover:rotate-90 md:right-6 md:top-6 md:h-12 md:w-12"
+                className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md transition-all hover:bg-brand-orange hover:rotate-90 md:right-6 md:top-6 md:h-12 md:w-12 [-webkit-tap-highlight-color:transparent]"
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -319,7 +321,7 @@ export default function Projects() {
                     <span className="hidden md:inline">This project showcases advanced techniques in creative coding, focusing on performance, aesthetics, and user interaction to deliver a memorable digital experience.</span>
                   </p>
                   
-                  <a href={selectedProject.link || "#"} target={selectedProject.link && selectedProject.link !== "#" ? "_blank" : "_self"} rel="noopener noreferrer" className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full border border-white/20 bg-transparent px-8 py-4 font-mono text-sm uppercase tracking-widest text-white transition-all hover:border-brand-orange md:w-max">
+                  <a href={selectedProject.link || "#"} target={selectedProject.link && selectedProject.link !== "#" ? "_blank" : "_self"} rel="noopener noreferrer" className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full border border-white/20 bg-transparent px-8 py-4 font-mono text-sm uppercase tracking-widest text-white transition-all hover:border-brand-orange md:w-max [-webkit-tap-highlight-color:transparent]">
                     <span className="relative z-10 transition-colors group-hover:text-black">View Live Site</span>
                     <div className="absolute inset-0 -z-0 h-full w-full translate-y-full bg-brand-orange transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:translate-y-0" />
                   </a>

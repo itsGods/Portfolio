@@ -30,6 +30,11 @@
     }
   }
 
+  /* Remove mobile tap highlight flashing globally */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   /* Custom Scrollbar */
   ::-webkit-scrollbar {
     width: 8px;

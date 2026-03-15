@@ -1,8 +1,19 @@
-import { motion, useScroll, useTransform } from "motion/react";
-import { useRef } from "react";
+import { motion, useScroll, useTransform, AnimatePresence } from "motion/react";
+import { useRef, useState, useEffect } from "react";
 
 export default function About() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [currentImage, setCurrentImage] = useState(0);
+
+  const images = [
+    "https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png",
+    "https://res.cloudinary.com/dwlquotvw/image/upload/v1773599675/IMG_20260316_000417_qfhbnd.png"
+  ];
+
+  const handleNextImage = () => {
+    setCurrentImage((prev) => (prev + 1) % images.length);
+  };
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
@@ -91,25 +102,27 @@ export default function About() {
 
         {/* Right: Floating Image */}
         <motion.div style={{ y: y2, rotate }} className="relative flex-1 w-full max-w-md">
-          <div className="group relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-brand-dark">
-            <motion.div
-              initial={{ scale: 1.2, filter: "blur(20px)" }}
-              whileInView={{ scale: 1, filter: "blur(0px)" }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-              className="h-full w-full"
-            >
-              <img
-                src="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png"
-                alt="TG Habib - Slowly but Surely"
-                className="h-full w-full object-cover opacity-60 grayscale transition-all duration-1000 group-hover:scale-110 group-hover:opacity-100 group-hover:grayscale-0"
+          <div 
+            className="group relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-brand-dark cursor-pointer"
+            onClick={handleNextImage}
+          >
+            <AnimatePresence initial={false}>
+              <motion.img
+                key={currentImage}
+                src={images[currentImage]}
+                alt="TG Habib"
+                initial={{ opacity: 0, x: "100%", scale: 1.05 }}
+                animate={{ opacity: 1, x: "0%", scale: 1 }}
+                exit={{ opacity: 0, x: "-100%", scale: 0.95 }}
+                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 h-full w-full object-cover"
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent" />
-            </motion.div>
+            </AnimatePresence>
+            <div className="absolute inset-0 z-10 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent pointer-events-none" />
             
             {/* Decorative Elements */}
-            <div className="absolute -inset-2 z-0 border border-white/5 bg-white/[0.02] backdrop-blur-sm transition-colors duration-500 group-hover:border-brand-orange/20 group-hover:bg-brand-orange/[0.02]" />
+            <div className="absolute -inset-2 z-20 border border-white/5 bg-white/[0.02] transition-colors duration-500 group-hover:border-brand-orange/20 group-hover:bg-brand-orange/[0.02] pointer-events-none" />
             
             <div className="absolute -left-4 -top-4 h-8 w-8 border-l-2 border-t-2 border-brand-orange/50 transition-all duration-500 group-hover:-left-6 group-hover:-top-6 group-hover:border-brand-orange" />
             <div className="absolute -right-4 -top-4 h-8 w-8 border-r-2 border-t-2 border-brand-orange/50 transition-all duration-500 group-hover:-right-6 group-hover:-top-6 group-hover:border-brand-orange" />
@@ -127,10 +140,20 @@ export default function About() {
             <motion.div 
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -right-8 top-1/4 hidden rounded-full border border-white/10 bg-white/5 px-6 py-3 backdrop-blur-md md:block"
+              className="absolute -right-8 top-1/4 hidden rounded-full border border-white/10 bg-white/5 px-6 py-3 backdrop-blur-md md:block pointer-events-none"
             >
               <p className="font-mono text-xs uppercase tracking-widest text-white">Est. 2026</p>
             </motion.div>
+
+            {/* Pagination Indicators */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+              {images.map((_, idx) => (
+                <div 
+                  key={idx} 
+                  className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentImage ? "w-6 bg-brand-orange" : "w-1.5 bg-white/30"}`}
+                />
+              ))}
+            </div>
           </div>
         </motion.div>
 
