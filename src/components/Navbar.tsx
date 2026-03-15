@@ -1,13 +1,27 @@
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "motion/react";
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 
-const navItems = ["Home", "Projects", "About", "Skills", "Contact"];
+const navItems = ["Home", "Projects", "About", "Skills", "Contact", "Blog"];
 
 export default function Navbar() {
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
   const [isTop, setIsTop] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  const isBlogSubdomain = window.location.hostname.startsWith('blog.');
+  const isPortfolioHome = location.pathname === "/" && !isBlogSubdomain;
+
+  const getHref = (item: string) => {
+    if (item === "Blog") {
+      return isBlogSubdomain ? "/" : "/blog";
+    }
+    if (isBlogSubdomain) {
+      return item === "Home" ? "https://tghabib.com/" : `https://tghabib.com/#${item.toLowerCase()}`;
+    }
+    return isPortfolioHome ? `#${item.toLowerCase()}` : `/#${item.toLowerCase()}`;
+  };
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() || 0;
@@ -40,7 +54,7 @@ export default function Navbar() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="group relative z-50 flex items-center gap-2 font-display text-xl font-bold tracking-tighter text-white"
           >
-            HABIB<span className="text-brand-orange">.</span>
+            <Link to="/">HABIB<span className="text-brand-orange">.</span></Link>
           </motion.div>
 
           {/* Desktop Nav (Glass Pill) */}
@@ -53,17 +67,32 @@ export default function Navbar() {
             }`}
           >
             <ul className="flex items-center gap-8">
-              {navItems.map((item, i) => (
-                <li key={item} className="relative group">
-                  <a
-                    href={`#${item.toLowerCase()}`}
-                    className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/70 transition-colors hover:text-white"
-                  >
-                    {item}
-                  </a>
-                  <span className="absolute -bottom-2 left-1/2 h-[2px] w-0 -translate-x-1/2 bg-brand-orange transition-all duration-300 group-hover:w-full" />
-                </li>
-              ))}
+              {navItems.map((item, i) => {
+                const isBlog = item === "Blog";
+                const href = getHref(item);
+                const isExternal = isBlogSubdomain && !isBlog;
+                
+                return (
+                  <li key={item} className="relative group">
+                    {isBlog ? (
+                      <Link
+                        to={href}
+                        className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/70 transition-colors hover:text-white"
+                      >
+                        {item}
+                      </Link>
+                    ) : (
+                      <a
+                        href={href}
+                        className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/70 transition-colors hover:text-white"
+                      >
+                        {item}
+                      </a>
+                    )}
+                    <span className="absolute -bottom-2 left-1/2 h-[2px] w-0 -translate-x-1/2 bg-brand-orange transition-all duration-300 group-hover:w-full" />
+                  </li>
+                );
+              })}
             </ul>
           </motion.div>
 
@@ -113,25 +142,42 @@ export default function Navbar() {
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:2rem_2rem]" />
 
             <ul className="relative z-10 flex flex-col items-center gap-8">
-              {navItems.map((item, i) => (
-                <motion.li
-                  key={item}
-                  initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.7, delay: 0.1 + i * 0.1, ease: [0.76, 0, 0.24, 1] }}
-                  className="overflow-hidden"
-                >
-                  <a
-                    href={`#${item.toLowerCase()}`}
-                    onClick={() => setIsOpen(false)}
-                    className="group relative flex items-center gap-4 font-display text-5xl font-bold tracking-tighter text-white transition-colors hover:text-brand-orange"
+              {navItems.map((item, i) => {
+                const isBlog = item === "Blog";
+                const href = getHref(item);
+                const isExternal = isBlogSubdomain && !isBlog;
+
+                return (
+                  <motion.li
+                    key={item}
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    transition={{ duration: 0.7, delay: 0.1 + i * 0.1, ease: [0.76, 0, 0.24, 1] }}
+                    className="overflow-hidden"
                   >
-                    <span className="font-mono text-sm text-brand-orange/50 transition-colors group-hover:text-brand-orange">0{i + 1}</span>
-                    {item}
-                  </a>
-                </motion.li>
-              ))}
+                    {isBlog ? (
+                      <Link
+                        to={href}
+                        onClick={() => setIsOpen(false)}
+                        className="group relative flex items-center gap-4 font-display text-5xl font-bold tracking-tighter text-white transition-colors hover:text-brand-orange"
+                      >
+                        <span className="font-mono text-sm text-brand-orange/50 transition-colors group-hover:text-brand-orange">0{i + 1}</span>
+                        {item}
+                      </Link>
+                    ) : (
+                      <a
+                        href={href}
+                        onClick={() => setIsOpen(false)}
+                        className="group relative flex items-center gap-4 font-display text-5xl font-bold tracking-tighter text-white transition-colors hover:text-brand-orange"
+                      >
+                        <span className="font-mono text-sm text-brand-orange/50 transition-colors group-hover:text-brand-orange">0{i + 1}</span>
+                        {item}
+                      </a>
+                    )}
+                  </motion.li>
+                );
+              })}
             </ul>
 
             {/* Mobile Menu Footer */}

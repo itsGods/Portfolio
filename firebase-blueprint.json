@@ -1,0 +1,75 @@
+{
+  "entities": {
+    "BlogPost": {
+      "title": "BlogPost",
+      "description": "A professional blog post.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the blog post."
+        },
+        "slug": {
+          "type": "string",
+          "description": "The URL-friendly slug for the post."
+        },
+        "content": {
+          "type": "string",
+          "description": "The markdown content of the post."
+        },
+        "excerpt": {
+          "type": "string",
+          "description": "A short summary of the post for the list view."
+        },
+        "coverImage": {
+          "type": "string",
+          "description": "URL of the cover image."
+        },
+        "published": {
+          "type": "boolean",
+          "description": "Whether the post is published or a draft."
+        },
+        "createdAt": {
+          "type": "timestamp",
+          "description": "When the post was created."
+        },
+        "updatedAt": {
+          "type": "timestamp",
+          "description": "When the post was last updated."
+        },
+        "seoTitle": {
+          "type": "string",
+          "description": "SEO title tag."
+        },
+        "seoDescription": {
+          "type": "string",
+          "description": "SEO meta description."
+        }
+      },
+      "required": ["title", "slug", "content", "published", "createdAt", "updatedAt"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A user in the system.",
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": ["admin", "user"],
+          "description": "The role of the user."
+        }
+      },
+      "required": ["role"]
+    }
+  },
+  "firestore": {
+    "posts/{postId}": {
+      "schema": "BlogPost",
+      "description": "Collection of blog posts."
+    },
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Collection of users."
+    }
+  }
+}
