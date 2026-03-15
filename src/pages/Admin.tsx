@@ -4,7 +4,7 @@ import { collection, query, orderBy, onSnapshot, doc, setDoc, deleteDoc, serverT
 import { onAuthStateChanged } from "firebase/auth";
 import { db, auth, loginWithGoogle, logout } from "../firebase";
 import { format } from "date-fns";
-import { Plus, Edit2, Trash2, LogOut, Sparkles, Image as ImageIcon, Wand2 } from "lucide-react";
+import { Plus, Edit2, Trash2, LogOut, Sparkles, Image as ImageIcon, Wand2, Users, FileText } from "lucide-react";
 import { GoogleGenAI, Type } from "@google/genai";
 
 const resizeAndCompressImage = (base64Str: string, maxWidth = 1200, maxHeight = 675): Promise<string> => {
@@ -58,6 +58,8 @@ export default function Admin() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [activeTab, setActiveTab] = useState<"posts" | "subscribers">("posts");
+  const [subscribers, setSubscribers] = useState<any[]>([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -71,7 +73,7 @@ export default function Admin() {
     if (!user) return;
 
     const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribePosts = onSnapshot(q, (snapshot) => {
       const postsData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -83,7 +85,21 @@ export default function Admin() {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    const qSubscribers = query(collection(db, "subscribers"), orderBy("createdAt", "desc"));
+    const unsubscribeSubscribers = onSnapshot(qSubscribers, (snapshot) => {
+      const subsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setSubscribers(subsData);
+    }, (error) => {
+      console.error("Error fetching subscribers:", error);
+    });
+
+    return () => {
+      unsubscribePosts();
+      unsubscribeSubscribers();
+    };
   }, [user]);
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -282,6 +298,23 @@ export default function Admin() {
           </div>
         </header>
 
+        {!isCreating && !editingPost && (
+          <div className="flex gap-4 mb-8 border-b border-white/10 pb-4">
+            <button 
+              onClick={() => setActiveTab("posts")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full font-mono text-sm uppercase tracking-widest transition-colors ${activeTab === "posts" ? "bg-brand-orange text-white" : "text-white/50 hover:text-white"}`}
+            >
+              <FileText size={16} /> Posts
+            </button>
+            <button 
+              onClick={() => setActiveTab("subscribers")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full font-mono text-sm uppercase tracking-widest transition-colors ${activeTab === "subscribers" ? "bg-brand-orange text-white" : "text-white/50 hover:text-white"}`}
+            >
+              <Users size={16} /> Subscribers ({subscribers.length})
+            </button>
+          </div>
+        )}
+
         {errorMessage && (
           <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200 flex justify-between items-center">
             <p>{errorMessage}</p>
@@ -429,7 +462,7 @@ export default function Admin() {
               </div>
             </form>
           </div>
-        ) : (
+        ) : activeTab === "posts" ? (
           <>
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-xl font-mono text-white/60">All Posts</h2>
@@ -492,6 +525,34 @@ export default function Admin() {
               </table>
             </div>
           </>
+        ) : (
+          <div className="bg-brand-dark rounded-2xl border border-white/10 overflow-hidden">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/10 bg-black/20">
+                  <th className="p-4 font-mono text-xs uppercase tracking-widest text-white/40">Email</th>
+                  <th className="p-4 font-mono text-xs uppercase tracking-widest text-white/40">Subscribed Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {subscribers.map((sub) => (
+                  <tr key={sub.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <td className="p-4 font-medium">{sub.email}</td>
+                    <td className="p-4 text-sm text-white/60">
+                      {sub.createdAt?.toDate ? format(sub.createdAt.toDate(), "MMM dd, yyyy HH:mm") : "N/A"}
+                    </td>
+                  </tr>
+                ))}
+                {subscribers.length === 0 && (
+                  <tr>
+                    <td colSpan={2} className="p-8 text-center text-white/40 font-mono text-sm">
+                      No subscribers yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

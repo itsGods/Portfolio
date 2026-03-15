@@ -114,5 +114,17 @@ service cloud.firestore {
       allow update: if isAdmin() && isValidUser();
       allow delete: if isAdmin();
     }
+
+    match /subscribers/{subscriberId} {
+      // Anyone can subscribe (create)
+      allow create: if hasOnlyAllowedFields(['email', 'createdAt']) &&
+                    hasRequiredFields(['email', 'createdAt']) &&
+                    request.resource.data.email is string &&
+                    request.resource.data.email.matches('^[^@]+@[^@]+\\.[^@]+$') &&
+                    request.resource.data.createdAt is timestamp;
+      
+      // Only admins can view or manage subscribers
+      allow read, update, delete: if isAdmin();
+    }
   }
 }

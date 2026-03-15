@@ -54,7 +54,7 @@ export default function Navbar() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="group relative z-50 flex items-center gap-2 font-display text-xl font-bold tracking-tighter text-white"
           >
-            <Link to="/">HABIB<span className="text-brand-orange">.</span></Link>
+            <Link to="/">TG HABIB<span className="text-brand-orange">.</span></Link>
           </motion.div>
 
           {/* Desktop Nav (Glass Pill) */}

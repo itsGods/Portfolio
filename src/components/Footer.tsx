@@ -1,4 +1,7 @@
 import { motion } from "motion/react";
+import { useState } from "react";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase";
 
 const socials = [
   { name: "GitHub", url: "https://github.com/itsGods" },
@@ -8,6 +11,27 @@ const socials = [
 ];
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    
+    setStatus("loading");
+    try {
+      await addDoc(collection(db, "subscribers"), {
+        email,
+        createdAt: serverTimestamp()
+      });
+      setStatus("success");
+      setEmail("");
+    } catch (error) {
+      console.error("Error subscribing:", error);
+      setStatus("error");
+    }
+  };
+
   return (
     <footer className="relative w-full overflow-hidden bg-brand-black pt-32 pb-12 border-t border-white/5">
       {/* Background Glow */}
@@ -51,6 +75,39 @@ export default function Footer() {
           </ul>
         </div>
 
+        {/* Newsletter Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="mb-24 flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-y border-white/10 py-12"
+        >
+          <div className="max-w-md">
+            <h3 className="font-display text-2xl font-bold text-white mb-2">Join the Inner Circle</h3>
+            <p className="font-sans text-white/50 text-sm">Get exclusive insights on design, tech, and my latest projects delivered straight to your inbox. No spam, ever.</p>
+          </div>
+          
+          <form onSubmit={handleSubscribe} className="w-full md:w-auto flex flex-col sm:flex-row gap-4">
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email" 
+              required
+              disabled={status === "loading" || status === "success"}
+              className="bg-white/5 border border-white/10 rounded-full px-6 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-orange transition-colors min-w-[250px]"
+            />
+            <button 
+              type="submit"
+              disabled={status === "loading" || status === "success"}
+              className="bg-brand-orange text-white px-8 py-3 rounded-full font-mono text-sm uppercase tracking-widest hover:bg-white hover:text-brand-orange transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {status === "loading" ? "Joining..." : status === "success" ? "Subscribed!" : "Subscribe"}
+            </button>
+          </form>
+        </motion.div>
+
         {/* Massive Typography */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -60,7 +117,7 @@ export default function Footer() {
           className="flex w-full justify-center border-b border-white/10 pb-12"
         >
           <h2 className="font-display text-[18vw] font-black leading-none tracking-tighter text-white/90 md:text-[15vw]">
-            HABIB<span className="text-brand-orange">.</span>
+            TG HABIB<span className="text-brand-orange">.</span>
           </h2>
         </motion.div>
 
@@ -87,7 +144,7 @@ export default function Footer() {
             transition={{ duration: 0.8, delay: 0.5 }}
             className="font-mono text-[10px] uppercase tracking-widest text-white/30"
           >
-            &copy; {new Date().getFullYear()} Habib. All Rights Reserved.
+            &copy; {new Date().getFullYear()} TG Habib. All Rights Reserved.
           </motion.div>
           
           <motion.div

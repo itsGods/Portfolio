@@ -101,7 +101,7 @@ export default function About() {
             >
               <img
                 src="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png"
-                alt="Habib - Slowly but Surely"
+                alt="TG Habib - Slowly but Surely"
                 className="h-full w-full object-cover opacity-60 grayscale transition-all duration-1000 group-hover:scale-110 group-hover:opacity-100 group-hover:grayscale-0"
                 referrerPolicy="no-referrer"
               />
