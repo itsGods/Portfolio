@@ -5,7 +5,7 @@ import { db } from "../firebase";
 
 const socials = [
   { name: "GitHub", url: "https://github.com/itsGods" },
-  { name: "Email", url: "mailto:itssolodev@gmail.com" },
+  { name: "Email", url: "mailto:hello@tghabib.com" },
   { name: "Twitter", url: "#" },
   { name: "LinkedIn", url: "#" },
 ];
@@ -64,6 +64,9 @@ export default function Footer() {
               >
                 <a
                   href={social.url}
+                  aria-label={`Visit my ${social.name} profile`}
+                  target={social.url.startsWith('http') ? "_blank" : "_self"}
+                  rel={social.url.startsWith('http') ? "noopener noreferrer" : ""}
                   className="group relative flex items-center gap-2 font-mono text-sm uppercase tracking-widest text-white/70 transition-colors hover:text-white"
                 >
                   <span className="text-brand-orange opacity-0 transition-opacity group-hover:opacity-100">&gt;</span>
@@ -91,6 +94,9 @@ export default function Footer() {
           <form onSubmit={handleSubscribe} className="w-full md:w-auto flex flex-col sm:flex-row gap-4">
             <input 
               type="email" 
+              name="email"
+              id="newsletter-email"
+              aria-label="Email address for newsletter"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email" 

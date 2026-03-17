@@ -88,7 +88,7 @@ export default function About() {
             <p className="mb-8 leading-relaxed">
               My work lives at the intersection of design, motion, and engineering. I don't just write code; I craft vibes. Every pixel is intentional, every animation is choreographed.
             </p>
-            <a href="#contact" className="group flex w-max items-center gap-4 font-mono text-sm uppercase tracking-widest text-white transition-colors hover:text-brand-orange">
+            <a href="#contact" aria-label="Contact me" className="group flex w-max items-center gap-4 font-mono text-sm uppercase tracking-widest text-white transition-colors hover:text-brand-orange">
               <span className="relative flex h-12 w-12 items-center justify-center rounded-full border border-white/20 transition-colors group-hover:border-brand-orange">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1">
                   <line x1="5" y1="19" x2="19" y2="5"></line>
@@ -110,13 +110,16 @@ export default function About() {
               <motion.img
                 key={currentImage}
                 src={images[currentImage]}
-                alt="TG Habib"
+                alt="TG Habib - Creative Developer and Vibecoder Portrait"
+                width="600"
+                height="800"
                 initial={{ opacity: 0, x: "100%", scale: 1.05 }}
                 animate={{ opacity: 1, x: "0%", scale: 1 }}
                 exit={{ opacity: 0, x: "-100%", scale: 0.95 }}
                 transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                 className="absolute inset-0 h-full w-full object-cover"
                 referrerPolicy="no-referrer"
+                loading="lazy"
               />
             </AnimatePresence>
             <div className="absolute inset-0 z-10 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent pointer-events-none" />

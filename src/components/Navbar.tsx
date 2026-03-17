@@ -1,5 +1,5 @@
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 const navItems = ["Home", "Projects", "About", "Skills", "Contact", "Blog"];
@@ -22,6 +22,20 @@ export default function Navbar() {
     }
     return isPortfolioHome ? `#${item.toLowerCase()}` : `/#${item.toLowerCase()}`;
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      window.dispatchEvent(new Event('stop-lenis'));
+    } else {
+      document.body.style.overflow = "";
+      window.dispatchEvent(new Event('start-lenis'));
+    }
+    return () => {
+      document.body.style.overflow = "";
+      window.dispatchEvent(new Event('start-lenis'));
+    };
+  }, [isOpen]);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() || 0;
@@ -77,6 +91,7 @@ export default function Navbar() {
                     {isBlog ? (
                       <Link
                         to={href}
+                        aria-label={`Go to ${item} page`}
                         className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/70 transition-colors hover:text-white"
                       >
                         {item}
@@ -84,6 +99,7 @@ export default function Navbar() {
                     ) : (
                       <a
                         href={href}
+                        aria-label={`Jump to ${item} section`}
                         className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/70 transition-colors hover:text-white"
                       >
                         {item}
@@ -102,26 +118,25 @@ export default function Navbar() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.8 }}
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden text-white relative z-50 flex h-12 w-12 items-center justify-center"
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isOpen}
+            className="md:hidden text-white relative z-50 flex h-12 w-12 flex-col items-center justify-center gap-[6px]"
           >
-            <motion.svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <motion.line
-                x1="4" x2="20" y1="6" y2="6"
-                animate={isOpen ? { x1: 6, x2: 18, y1: 6, y2: 18 } : { x1: 4, x2: 20, y1: 6, y2: 6 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              />
-              <motion.line
-                x1="4" x2="20" y1="12" y2="12"
-                animate={isOpen ? { opacity: 0, scale: 0 } : { opacity: 1, scale: 1 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                style={{ transformOrigin: "center" }}
-              />
-              <motion.line
-                x1="4" x2="20" y1="18" y2="18"
-                animate={isOpen ? { x1: 6, x2: 18, y1: 18, y2: 6 } : { x1: 4, x2: 20, y1: 18, y2: 18 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              />
-            </motion.svg>
+            <motion.span
+              animate={isOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="h-[2px] w-6 bg-white block origin-center rounded-full"
+            />
+            <motion.span
+              animate={isOpen ? { opacity: 0, scale: 0.5 } : { opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="h-[2px] w-6 bg-white block origin-center rounded-full"
+            />
+            <motion.span
+              animate={isOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="h-[2px] w-6 bg-white block origin-center rounded-full"
+            />
           </motion.button>
         </div>
       </motion.nav>
@@ -130,11 +145,11 @@ export default function Navbar() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, clipPath: "circle(0% at 100% 0)" }}
-            animate={{ opacity: 1, clipPath: "circle(150% at 100% 0)" }}
-            exit={{ opacity: 0, clipPath: "circle(0% at 100% 0)" }}
-            transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-brand-black/98 md:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { delay: 0.4, duration: 0.5, ease: [0.22, 1, 0.36, 1] } }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-brand-black/95 backdrop-blur-xl md:hidden"
           >
             {/* Cinematic Background Elements */}
             <div className="absolute left-0 top-1/4 h-[40vh] w-[40vw] rounded-full bg-brand-orange/10 blur-[100px]" />
@@ -150,16 +165,21 @@ export default function Navbar() {
                 return (
                   <motion.li
                     key={item}
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{ duration: 0.7, delay: 0.1 + i * 0.1, ease: [0.76, 0, 0.24, 1] }}
-                    className="overflow-hidden"
+                    initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ 
+                      opacity: 0, 
+                      y: 20, 
+                      scale: 0.9,
+                      transition: { duration: 0.4, delay: (navItems.length - 1 - i) * 0.04, ease: [0.22, 1, 0.36, 1] }
+                    }}
+                    transition={{ duration: 0.6, delay: 0.1 + i * 0.05, ease: [0.22, 1, 0.36, 1] }}
                   >
                     {isBlog ? (
                       <Link
                         to={href}
                         onClick={() => setIsOpen(false)}
+                        aria-label={`Go to ${item} page`}
                         className="group relative flex items-center gap-4 font-display text-5xl font-bold tracking-tighter text-white transition-colors hover:text-brand-orange"
                       >
                         <span className="font-mono text-sm text-brand-orange/50 transition-colors group-hover:text-brand-orange">0{i + 1}</span>
@@ -169,6 +189,7 @@ export default function Navbar() {
                       <a
                         href={href}
                         onClick={() => setIsOpen(false)}
+                        aria-label={`Jump to ${item} section`}
                         className="group relative flex items-center gap-4 font-display text-5xl font-bold tracking-tighter text-white transition-colors hover:text-brand-orange"
                       >
                         <span className="font-mono text-sm text-brand-orange/50 transition-colors group-hover:text-brand-orange">0{i + 1}</span>
@@ -182,9 +203,14 @@ export default function Navbar() {
 
             {/* Mobile Menu Footer */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ 
+                opacity: 0, 
+                y: 10,
+                transition: { duration: 0.4, delay: 0, ease: [0.22, 1, 0.36, 1] }
+              }}
+              transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className="absolute bottom-12 flex flex-col items-center gap-4 text-center"
             >
               <div className="h-[1px] w-12 bg-white/20" />

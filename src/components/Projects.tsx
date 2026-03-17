@@ -1,6 +1,8 @@
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "motion/react";
 import React, { useState, useEffect } from "react";
 
+import { useStructuredData } from "../hooks/useStructuredData";
+
 const projects = [
   {
     id: 1,
@@ -140,9 +142,12 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
           <picture className="block h-full w-full">
             <img
               src={project.image}
-              alt={project.title}
+              alt={`${project.title} - ${project.category} Project`}
+              width="800"
+              height="400"
               className="h-full w-full object-cover opacity-50 grayscale transition-[filter,opacity] duration-700 md:group-hover:opacity-100 md:group-hover:grayscale-0"
               referrerPolicy="no-referrer"
+              loading="lazy"
             />
           </picture>
         </div>
@@ -183,15 +188,38 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
 export default function Projects() {
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
 
+  useStructuredData({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": projects.map((p, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "item": {
+        "@type": "CreativeWork",
+        "name": p.title,
+        "description": p.description,
+        "image": p.image,
+        "url": p.link !== "#" ? p.link : "https://tghabib.com/#projects"
+      }
+    }))
+  });
+
   // Prevent scrolling when modal is open
   useEffect(() => {
     if (selectedProject) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = "hidden";
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      window.dispatchEvent(new Event('stop-lenis'));
     } else {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+      window.dispatchEvent(new Event('start-lenis'));
     }
     return () => {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+      window.dispatchEvent(new Event('start-lenis'));
     };
   }, [selectedProject]);
 
@@ -261,6 +289,7 @@ export default function Projects() {
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ delay: 0.1 }}
                 onClick={() => setSelectedProject(null)}
+                aria-label="Close project details"
                 className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md transition-all hover:bg-brand-orange hover:rotate-90 md:right-6 md:top-6 md:h-12 md:w-12 [-webkit-tap-highlight-color:transparent]"
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -274,9 +303,12 @@ export default function Projects() {
                 <picture className="block h-full w-full">
                   <img
                     src={selectedProject.image}
-                    alt={selectedProject.title}
+                    alt={`${selectedProject.title} - ${selectedProject.category} Project Details`}
+                    width="1200"
+                    height="600"
                     className="h-full w-full object-cover"
                     referrerPolicy="no-referrer"
+                    loading="eager"
                   />
                 </picture>
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent pointer-events-none" />
@@ -321,7 +353,18 @@ export default function Projects() {
                     <span className="hidden md:inline">This project showcases advanced techniques in creative coding, focusing on performance, aesthetics, and user interaction to deliver a memorable digital experience.</span>
                   </p>
                   
-                  <a href={selectedProject.link || "#"} target={selectedProject.link && selectedProject.link !== "#" ? "_blank" : "_self"} rel="noopener noreferrer" className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full border border-white/20 bg-transparent px-8 py-4 font-mono text-sm uppercase tracking-widest text-white transition-all hover:border-brand-orange md:w-max [-webkit-tap-highlight-color:transparent]">
+                  <a 
+                    href={selectedProject.link || "#"} 
+                    onClick={(e) => {
+                      if (!selectedProject.link || selectedProject.link === "#") {
+                        e.preventDefault();
+                      }
+                    }}
+                    aria-label={`View live site for ${selectedProject.title}`} 
+                    target={selectedProject.link && selectedProject.link !== "#" ? "_blank" : "_self"} 
+                    rel="noopener noreferrer" 
+                    className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full border border-white/20 bg-transparent px-8 py-4 font-mono text-sm uppercase tracking-widest text-white transition-all hover:border-brand-orange md:w-max [-webkit-tap-highlight-color:transparent]"
+                  >
                     <span className="relative z-10 transition-colors group-hover:text-black">View Live Site</span>
                     <div className="absolute inset-0 -z-0 h-full w-full translate-y-full bg-brand-orange transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:translate-y-0" />
                   </a>
