@@ -72,7 +72,7 @@ service cloud.firestore {
     // Domain Validators
     // ===============================================================
     function isValidPost() {
-      return hasOnlyAllowedFields(['title', 'slug', 'content', 'excerpt', 'coverImage', 'published', 'createdAt', 'updatedAt', 'seoTitle', 'seoDescription']) &&
+      return hasOnlyAllowedFields(['title', 'slug', 'content', 'excerpt', 'coverImage', 'published', 'createdAt', 'updatedAt', 'seoTitle', 'seoDescription', 'tags', 'readingTime', 'previewToken', 'views', 'reactions']) &&
              hasRequiredFields(['title', 'slug', 'content', 'published', 'createdAt', 'updatedAt']) &&
              validStringLength('title', 1, 200) &&
              validStringLength('slug', 1, 200) &&
@@ -83,7 +83,12 @@ service cloud.firestore {
              request.resource.data.createdAt is timestamp &&
              request.resource.data.updatedAt is timestamp &&
              isValidOptionalString('seoTitle', 0, 100) &&
-             isValidOptionalString('seoDescription', 0, 300);
+             isValidOptionalString('seoDescription', 0, 300) &&
+             (!('tags' in request.resource.data) || request.resource.data.tags is list) &&
+             (!('readingTime' in request.resource.data) || request.resource.data.readingTime is number) &&
+             isValidOptionalString('previewToken', 0, 100) &&
+             (!('views' in request.resource.data) || request.resource.data.views is number) &&
+             (!('reactions' in request.resource.data) || request.resource.data.reactions is map);
     }
 
     function isValidUser() {
@@ -92,16 +97,24 @@ service cloud.firestore {
              request.resource.data.role in ['admin', 'user'];
     }
 
+    function isPublicInteraction() {
+      let affectedKeys = request.resource.data.diff(resource.data).affectedKeys();
+      return affectedKeys.hasOnly(['views', 'reactions']) &&
+             (!affectedKeys.hasAny(['views']) || request.resource.data.views is number) &&
+             (!affectedKeys.hasAny(['reactions']) || request.resource.data.reactions is map);
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
     match /posts/{postId} {
       // Anyone can read published posts. Admins can read all posts (including drafts).
-      allow read: if resource.data.published == true || isAdmin();
+      allow read: if resource.data.published == true || isAdmin() || (resource.data.previewToken != null);
       
       // Only admins can create, update, or delete posts.
       allow create: if isAdmin() && isValidPost();
-      allow update: if isAdmin() && isValidPost() && areImmutableFieldsUnchanged(['createdAt']);
+      allow update: if (isAdmin() && isValidPost() && areImmutableFieldsUnchanged(['createdAt'])) ||
+                       (resource.data.published == true && isPublicInteraction());
       allow delete: if isAdmin();
     }
 

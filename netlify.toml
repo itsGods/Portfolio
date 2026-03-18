@@ -2,6 +2,10 @@
   command = "npm run build"
   publish = "dist"
 
+[[edge_functions]]
+  path = "/blog/*"
+  function = "og-tags"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

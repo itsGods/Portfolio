@@ -3,6 +3,7 @@ import { useParams, Link, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import type { Timestamp } from "firebase/firestore";
 import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
 import rehypeSlug from "rehype-slug";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -331,6 +332,7 @@ export default function BlogPost() {
 
             <div className="prose prose-invert prose-lg max-w-none prose-headings:font-display prose-headings:font-bold prose-p:font-sans prose-p:text-white/80 prose-a:text-brand-orange hover:prose-a:text-brand-orange/80 prose-img:rounded-xl">
               <ReactMarkdown 
+                remarkPlugins={[remarkBreaks]}
                 rehypePlugins={[rehypeSlug]}
                 components={{
                   code: CodeBlock

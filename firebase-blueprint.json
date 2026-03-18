@@ -44,6 +44,32 @@
         "seoDescription": {
           "type": "string",
           "description": "SEO meta description."
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tags for the post."
+        },
+        "readingTime": {
+          "type": "number",
+          "description": "Estimated reading time in minutes."
+        },
+        "previewToken": {
+          "type": "string",
+          "description": "Token for previewing drafts."
+        },
+        "views": {
+          "type": "number",
+          "description": "Number of views."
+        },
+        "reactions": {
+          "type": "object",
+          "description": "Reactions to the post.",
+          "properties": {
+            "fire": { "type": "number" },
+            "brain": { "type": "number" },
+            "heart": { "type": "number" }
+          }
         }
       },
       "required": ["title", "slug", "content", "published", "createdAt", "updatedAt"]

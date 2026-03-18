@@ -8,6 +8,11 @@ import { Plus, Edit2, Trash2, LogOut, Sparkles, Image as ImageIcon, Wand2, Users
 import { GoogleGenAI, Type } from "@google/genai";
 import ReactMarkdown from "react-markdown";
 import { calculateReadingTime } from "../lib/utils";
+import MDEditor from '@uiw/react-md-editor';
+import '@uiw/react-md-editor/markdown-editor.css';
+import '@uiw/react-markdown-preview/markdown.css';
+import remarkBreaks from 'remark-breaks';
+import { handleFirestoreError, OperationType } from "../lib/firebase-errors";
 
 const resizeAndCompressImage = (base64Str: string, maxWidth = 1200, maxHeight = 675): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -63,6 +68,7 @@ export default function Admin() {
   const [postToDelete, setPostToDelete] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
+  const [isFormatting, setIsFormatting] = useState(false);
   const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set());
   const [isSendingNewsletter, setIsSendingNewsletter] = useState(false);
   const [newsletterStatus, setNewsletterStatus] = useState<{message: string, type: 'success' | 'error'} | null>(null);
@@ -168,8 +174,7 @@ export default function Admin() {
       setPosts(postsData);
       setLoading(false);
     }, (error) => {
-      console.error("Error fetching admin posts:", error);
-      setLoading(false);
+      handleFirestoreError(error, OperationType.LIST, "posts");
     });
 
     const qSubscribers = query(collection(db, "subscribers"), orderBy("createdAt", "desc"));
@@ -180,7 +185,7 @@ export default function Admin() {
       }));
       setSubscribers(subsData);
     }, (error) => {
-      console.error("Error fetching subscribers:", error);
+      handleFirestoreError(error, OperationType.LIST, "subscribers");
     });
 
     return () => {
@@ -224,8 +229,8 @@ export default function Admin() {
       setEditorContent("");
       setTags([]);
     } catch (error) {
-      console.error("Error saving post:", error);
       setErrorMessage("Error saving post. Check console.");
+      handleFirestoreError(error, editingPost ? OperationType.UPDATE : OperationType.CREATE, "posts");
     }
   };
 
@@ -235,8 +240,8 @@ export default function Admin() {
       await deleteDoc(doc(db, "posts", postToDelete));
       setPostToDelete(null);
     } catch (error) {
-      console.error("Error deleting post:", error);
       setErrorMessage("Error deleting post.");
+      handleFirestoreError(error, OperationType.DELETE, `posts/${postToDelete}`);
     }
   };
 
@@ -280,10 +285,9 @@ export default function Admin() {
 
       await batch.commit();
       setSelectedPosts(new Set());
-      fetchPosts();
     } catch (error) {
-      console.error(`Error performing bulk ${action}:`, error);
       alert(`Failed to perform bulk action: ${error}`);
+      handleFirestoreError(error, action === 'delete' ? OperationType.DELETE : OperationType.UPDATE, "posts");
     }
   };
 
@@ -326,7 +330,7 @@ export default function Admin() {
   };
 
   const handleGenerateSEO = async () => {
-    const content = (document.querySelector('textarea[name="content"]') as HTMLTextAreaElement)?.value;
+    const content = editorContent;
     
     if (!content) {
       setErrorMessage("Please enter your article content first to generate SEO metadata and titles.");
@@ -383,7 +387,7 @@ export default function Admin() {
 
   const handleGenerateThumbnail = async () => {
     const title = (document.querySelector('input[name="title"]') as HTMLInputElement)?.value;
-    const content = (document.querySelector('textarea[name="content"]') as HTMLTextAreaElement)?.value;
+    const content = editorContent;
     
     if (!title && !content) {
       setErrorMessage("Please enter a title or content first to generate a thumbnail.");
@@ -397,8 +401,8 @@ export default function Admin() {
       const promptResponse = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: `Write a short, highly descriptive image generation prompt for a blog post cover image. 
-        The blog post is titled: "${title || 'Untitled'}" and the content is about: "${content ? content.substring(0, 500) + '...' : 'Tech and design'}". 
-        The style should be professional, cinematic, dark mode, highly detailed, matching a premium tech/design portfolio.
+        The blog post is titled: "${title || 'Untitled'}" and the content is about: "${content ? content.substring(0, 500) + '...' : 'General topic'}". 
+        The visual style should be directly inspired by the specific subject matter of the blog post. Make it highly detailed, professional, and visually captivating.
         Do not include text in the image. Just describe the visual.`
       });
       
@@ -436,6 +440,41 @@ export default function Admin() {
       setErrorMessage("Failed to generate thumbnail.");
     } finally {
       setIsGeneratingImage(false);
+    }
+  };
+
+  const handleFormatContent = async () => {
+    if (!editorContent) {
+      setErrorMessage("Please enter some content to format.");
+      return;
+    }
+
+    setIsFormatting(true);
+    setErrorMessage(null);
+
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-pro-preview",
+        contents: `You are an expert markdown editor and formatter. Take the following markdown content and fix its formatting, alignment, and structure. Ensure it uses clean, standard Markdown. Fix any broken paragraphs, lists, or headings. Do not change the core meaning or tone of the text, just make it perfectly formatted, aligned, and readable. Return ONLY the formatted markdown text, without any conversational filler or markdown code block backticks around the whole response if possible.
+
+Content:
+${editorContent}`,
+      });
+
+      let formattedContent = response.text || "";
+      if (formattedContent.startsWith("\`\`\`markdown")) {
+        formattedContent = formattedContent.replace(/^\`\`\`markdown\n/, "").replace(/\n\`\`\`$/, "");
+      } else if (formattedContent.startsWith("\`\`\`")) {
+        formattedContent = formattedContent.replace(/^\`\`\`\n/, "").replace(/\n\`\`\`$/, "");
+      }
+
+      setEditorContent(formattedContent);
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("Failed to format content. Please try again.");
+    } finally {
+      setIsFormatting(false);
     }
   };
 
@@ -523,7 +562,7 @@ export default function Admin() {
                   <button
                     type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText(`https://tghabib.com/blog/${editingPost.slug}?preview=${editingPost.previewToken}`);
+                      navigator.clipboard.writeText(`${window.location.origin}/blog/${editingPost.slug}?preview=${editingPost.previewToken}`);
                       const btn = document.getElementById('copy-preview-btn');
                       if (btn) {
                         const originalText = btn.innerHTML;
@@ -589,30 +628,27 @@ export default function Admin() {
                     </span>
                     <button
                       type="button"
-                      onClick={() => setIsPreviewMode(!isPreviewMode)}
-                      className="flex items-center gap-2 text-xs font-mono text-brand-orange hover:text-white transition-colors"
+                      onClick={handleFormatContent}
+                      disabled={isFormatting}
+                      className="flex items-center gap-2 text-xs font-mono text-brand-orange hover:text-white transition-colors disabled:opacity-50"
                     >
-                      {isPreviewMode ? <><Code size={14} /> Edit</> : <><Eye size={14} /> Preview</>}
+                      {isFormatting ? <span className="animate-spin">⏳</span> : <Sparkles size={14} />}
+                      Format with AI
                     </button>
                   </div>
                 </div>
-                {isPreviewMode ? (
-                  <div className="w-full bg-black/50 border border-white/10 rounded-lg p-6 text-white min-h-[400px] prose prose-invert prose-brand max-w-none overflow-y-auto">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {editorContent || "*No content to preview*"}
-                    </ReactMarkdown>
-                    <textarea name="content" value={editorContent} readOnly className="hidden" />
-                  </div>
-                ) : (
-                  <textarea
-                    required
-                    name="content"
+                <div data-color-mode="dark">
+                  <MDEditor
                     value={editorContent}
-                    onChange={(e) => setEditorContent(e.target.value)}
-                    rows={15}
-                    className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-white focus:border-brand-orange outline-none font-mono text-sm"
+                    onChange={(val) => setEditorContent(val || "")}
+                    height={500}
+                    previewOptions={{
+                      remarkPlugins: [remarkBreaks]
+                    }}
+                    className="w-full bg-black/50 border border-white/10 rounded-lg overflow-hidden"
                   />
-                )}
+                  <input type="hidden" name="content" value={editorContent} required />
+                </div>
               </div>
 
               <div>
