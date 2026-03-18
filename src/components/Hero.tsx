@@ -100,6 +100,9 @@ export default function Hero() {
                 alt="TG Habib Poster"
                 width="1200"
                 height="800"
+                fetchPriority="high"
+                loading="eager"
+                decoding="sync"
                 className="w-[90vw] max-w-6xl h-auto object-contain drop-shadow-[0_0_50px_rgba(255,90,0,0.15)]"
                 style={{
                   // Feather the edges of the image so it blends seamlessly into the black background

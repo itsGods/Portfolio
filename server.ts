@@ -33,7 +33,7 @@ async function startServer() {
   // Dynamic Sitemap Generation
   app.get("/sitemap.xml", async (req, res) => {
     try {
-      const url = \`https://firestore.googleapis.com/v1/projects/\${projectId}/databases/\${databaseId}/documents:runQuery\`;
+      const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents:runQuery`;
       
       const queryPayload = {
         structuredQuery: {
@@ -64,20 +64,20 @@ async function startServer() {
               const slug = doc.slug?.stringValue;
               const updatedAt = doc.updatedAt?.timestampValue || new Date().toISOString();
               if (slug) {
-                dynamicUrls += \`
+                dynamicUrls += `
   <url>
-    <loc>https://tghabib.com/blog/\${slug}</loc>
-    <lastmod>\${updatedAt}</lastmod>
+    <loc>https://tghabib.com/blog/${slug}</loc>
+    <lastmod>${updatedAt}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
-  </url>\`;
+  </url>`;
               }
             }
           });
         }
       }
 
-      const sitemap = \`<?xml version="1.0" encoding="UTF-8"?>
+      const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://tghabib.com/</loc>
@@ -88,8 +88,8 @@ async function startServer() {
     <loc>https://tghabib.com/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-  </url>\${dynamicUrls}
-</urlset>\`;
+  </url>${dynamicUrls}
+</urlset>`;
 
       res.header('Content-Type', 'application/xml');
       res.send(sitemap.trim());
@@ -105,7 +105,7 @@ async function startServer() {
     
     try {
       // Fetch post from Firestore REST API
-      const url = \`https://firestore.googleapis.com/v1/projects/\${projectId}/databases/\${databaseId}/documents:runQuery\`;
+      const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents:runQuery`;
       
       const queryPayload = {
         structuredQuery: {
@@ -145,7 +145,7 @@ async function startServer() {
             const coverImage = doc.coverImage?.stringValue || "";
             const createdAt = doc.createdAt?.timestampValue || new Date().toISOString();
             const updatedAt = doc.updatedAt?.timestampValue || createdAt;
-            const canonicalUrl = \`https://tghabib.com/blog/\${slug}\`;
+            const canonicalUrl = `https://tghabib.com/blog/${slug}`;
             
             // Read index.html
             let template = "";
@@ -185,26 +185,26 @@ async function startServer() {
 
             // Inject meta tags by replacing existing ones
             let html = template
-              .replace(/<title>.*?<\/title>/i, \`<title>\${title}</title>\`)
+              .replace(/<title>.*?<\/title>/i, `<title>${title}</title>`)
               .replace(/<link rel="canonical" href=".*?"\s*\/?>/i, '') // Remove existing canonical if any
-              .replace(/<meta name="title" content=".*?"\s*\/?>/i, \`<meta name="title" content="\${title}" />\n    <link rel="canonical" href="\${canonicalUrl}" />\`)
-              .replace(/<meta name="description" content=".*?"\s*\/?>/i, \`<meta name="description" content="\${description}" />\`)
-              .replace(/<meta property="og:title" content=".*?"\s*\/?>/i, \`<meta property="og:title" content="\${title}" />\`)
-              .replace(/<meta property="og:description" content=".*?"\s*\/?>/i, \`<meta property="og:description" content="\${description}" />\`)
-              .replace(/<meta property="og:type" content=".*?"\s*\/?>/i, \`<meta property="og:type" content="article" />\`)
-              .replace(/<meta property="og:url" content=".*?"\s*\/?>/i, \`<meta property="og:url" content="\${canonicalUrl}" />\`)
-              .replace(/<meta property="twitter:title" content=".*?"\s*\/?>/i, \`<meta property="twitter:title" content="\${title}" />\`)
-              .replace(/<meta property="twitter:description" content=".*?"\s*\/?>/i, \`<meta property="twitter:description" content="\${description}" />\`)
-              .replace(/<meta property="twitter:url" content=".*?"\s*\/?>/i, \`<meta property="twitter:url" content="\${canonicalUrl}" />\`);
+              .replace(/<meta name="title" content=".*?"\s*\/?>/i, `<meta name="title" content="${title}" />\n    <link rel="canonical" href="${canonicalUrl}" />`)
+              .replace(/<meta name="description" content=".*?"\s*\/?>/i, `<meta name="description" content="${description}" />`)
+              .replace(/<meta property="og:title" content=".*?"\s*\/?>/i, `<meta property="og:title" content="${title}" />`)
+              .replace(/<meta property="og:description" content=".*?"\s*\/?>/i, `<meta property="og:description" content="${description}" />`)
+              .replace(/<meta property="og:type" content=".*?"\s*\/?>/i, `<meta property="og:type" content="article" />`)
+              .replace(/<meta property="og:url" content=".*?"\s*\/?>/i, `<meta property="og:url" content="${canonicalUrl}" />`)
+              .replace(/<meta property="twitter:title" content=".*?"\s*\/?>/i, `<meta property="twitter:title" content="${title}" />`)
+              .replace(/<meta property="twitter:description" content=".*?"\s*\/?>/i, `<meta property="twitter:description" content="${description}" />`)
+              .replace(/<meta property="twitter:url" content=".*?"\s*\/?>/i, `<meta property="twitter:url" content="${canonicalUrl}" />`);
 
             if (coverImage) {
               html = html
-                .replace(/<meta property="og:image" content=".*?"\s*\/?>/i, \`<meta property="og:image" content="\${coverImage}" />\`)
-                .replace(/<meta property="twitter:image" content=".*?"\s*\/?>/i, \`<meta property="twitter:image" content="\${coverImage}" />\`);
+                .replace(/<meta property="og:image" content=".*?"\s*\/?>/i, `<meta property="og:image" content="${coverImage}" />`)
+                .replace(/<meta property="twitter:image" content=".*?"\s*\/?>/i, `<meta property="twitter:image" content="${coverImage}" />`);
             }
 
             // Inject JSON-LD
-            html = html.replace('</head>', \`  <script type="application/ld+json">\n\${JSON.stringify(jsonLd, null, 2)}\n</script>\n</head>\`);
+            html = html.replace('</head>', `  <script type="application/ld+json">\n${JSON.stringify(jsonLd, null, 2)}\n</script>\n</head>`);
 
             // If in development, let Vite transform the HTML
             if (process.env.NODE_ENV !== "production") {
@@ -236,7 +236,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(\`Server running on http://localhost:\${PORT}\`);
+    console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 

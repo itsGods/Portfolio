@@ -82,11 +82,17 @@ interface Post {
   views?: number;
 }
 
+import { blogCache, prefetchBlogPost } from "../utils/cache";
+
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
-  const [post, setPost] = useState<Post | null>(null);
+  
+  // Try to find the post in cache first
+  const cachedPost = blogCache.posts.find(p => p.slug === slug) || blogCache.postDetails[slug || ""];
+  
+  const [post, setPost] = useState<Post | null>(cachedPost || null);
   const [relatedPosts, setRelatedPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedPost);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const scrollProgress = useReadingProgress();
   const { pathname, search } = useLocation();
@@ -124,6 +130,16 @@ export default function BlogPost() {
   useEffect(() => {
     const fetchPost = async () => {
       if (!slug) return;
+      
+      // Check cache first when slug changes
+      const cached = blogCache.posts.find(p => p.slug === slug) || blogCache.postDetails[slug];
+      if (cached) {
+        setPost(cached);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+
       try {
         const { collection, query, where, getDocs, orderBy, limit } = await import("firebase/firestore");
         const { db } = await import("../firebase");
@@ -137,8 +153,11 @@ export default function BlogPost() {
         const snapshot = await getDocs(q);
         if (!snapshot.empty) {
           const docRef = snapshot.docs[0].ref;
-          const currentPost = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Post;
+          const currentPost = { id: snapshot.docs[0].id, ...(snapshot.docs[0].data() as any) } as Post;
           setPost(currentPost);
+          
+          // Save to cache
+          blogCache.postDetails[slug] = currentPost;
 
           // Increment view count (only if not preview mode)
           if (!previewToken) {
@@ -180,15 +199,30 @@ export default function BlogPost() {
     {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
-      "headline": post.title,
-      "description": post.excerpt ?? stripAndTruncate(post.content),
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `https://tghabib.com/blog/${post.slug}`
+      },
+      "headline": post.seoTitle || post.title,
+      "description": post.seoDescription || post.excerpt || stripAndTruncate(post.content),
       "datePublished": post.createdAt?.toDate?.().toISOString() ?? '',
+      "dateModified": post.createdAt?.toDate?.().toISOString() ?? '',
       "author": { 
         "@type": "Person", 
-        "name": "Habib" 
+        "name": "TG Habib",
+        "url": "https://tghabib.com"
       },
-      "image": post.coverImage ?? '',
-      "url": `https://tghabib.com/blog/${post.slug}`
+      "publisher": {
+        "@type": "Organization",
+        "name": "TG Habib",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png"
+        }
+      },
+      "image": post.coverImage ? [post.coverImage] : [],
+      "url": `https://tghabib.com/blog/${post.slug}`,
+      "keywords": post.tags?.join(", ") || ""
     },
     {
       "@context": "https://schema.org",
@@ -233,20 +267,44 @@ export default function BlogPost() {
   const shareUrl = encodeURIComponent(window.location.href);
   const shareTitle = encodeURIComponent(post.title);
 
+  // Use explicit SEO fields if available, otherwise fallback
+  const metaTitle = post.seoTitle || `${post.title} | Habib Dev Blog`;
+  const metaDescription = post.seoDescription || post.excerpt || stripAndTruncate(post.content);
+  
+  // Ensure canonical URL always points to the primary domain to avoid duplicate content
+  const canonicalUrl = `https://tghabib.com/blog/${post.slug}`;
+
   return (
     <PageTransition>
       <main className="relative min-h-screen bg-brand-black text-brand-light selection:bg-brand-orange selection:text-white md:cursor-none flex flex-col">
         <Helmet>
-          <title>{post.title} | Habib Dev Blog</title>
-          <meta name="description" content={post.excerpt ?? stripAndTruncate(post.content)} />
-          <link rel="canonical" href={`https://tghabib.com${pathname}`} />
+          <title>{metaTitle}</title>
+          <meta name="description" content={metaDescription} />
+          {post.tags && post.tags.length > 0 && (
+            <meta name="keywords" content={post.tags.join(", ")} />
+          )}
+          <link rel="canonical" href={canonicalUrl} />
           {previewToken && <meta name="robots" content="noindex, nofollow" />}
-          <meta property="og:title" content={post.title} />
-          <meta property="og:description" content={post.excerpt ?? stripAndTruncate(post.content)} />
-          <meta property="og:url" content={`https://tghabib.com${pathname}`} />
+          
+          {/* Open Graph / Facebook */}
           <meta property="og:type" content="article" />
+          <meta property="og:url" content={canonicalUrl} />
+          <meta property="og:title" content={metaTitle} />
+          <meta property="og:description" content={metaDescription} />
           {post.coverImage && <meta property="og:image" content={post.coverImage} />}
+          <meta property="article:published_time" content={post.createdAt?.toDate?.().toISOString() || ''} />
+          <meta property="article:author" content="https://tghabib.com" />
+          {post.tags?.map(tag => (
+            <meta property="article:tag" content={tag} key={tag} />
+          ))}
+
+          {/* Twitter */}
           <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:url" content={canonicalUrl} />
+          <meta name="twitter:title" content={metaTitle} />
+          <meta name="twitter:description" content={metaDescription} />
+          {post.coverImage && <meta name="twitter:image" content={post.coverImage} />}
+          <meta name="twitter:creator" content="@tghabib" />
         </Helmet>
         
         <CustomCursor />
@@ -275,6 +333,23 @@ export default function BlogPost() {
         </button>
 
         <div className="flex-1 pt-32 pb-24 px-6 md:px-12 max-w-4xl mx-auto w-full">
+          {/* Breadcrumbs */}
+          <nav aria-label="Breadcrumb" className="mb-8 font-mono text-xs uppercase tracking-widest text-white/40">
+            <ol className="flex items-center gap-2 flex-wrap">
+              <li>
+                <Link to="/" className="hover:text-brand-orange transition-colors">Home</Link>
+              </li>
+              <li><span className="text-white/20">/</span></li>
+              <li>
+                <Link to={backUrl} className="hover:text-brand-orange transition-colors">Blog</Link>
+              </li>
+              <li><span className="text-white/20">/</span></li>
+              <li className="text-brand-orange truncate max-w-[200px] sm:max-w-[300px]" aria-current="page">
+                {post.title}
+              </li>
+            </ol>
+          </nav>
+
           <Link to={backUrl} className="inline-flex items-center gap-2 text-brand-orange hover:text-white transition-colors mb-12 font-mono text-xs uppercase tracking-widest">
             <ArrowLeft size={16} />
             Back to Blog
@@ -285,9 +360,9 @@ export default function BlogPost() {
               <div className="mb-6 flex flex-wrap items-center gap-4 text-brand-orange font-mono text-xs uppercase tracking-[0.2em]">
                 <div className="flex items-center gap-4">
                   <div className="h-[1px] w-12 bg-brand-orange" />
-                  <p>
+                  <time dateTime={post.createdAt?.toDate()?.toISOString()}>
                     {post.createdAt?.toDate() ? post.createdAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown date'}
-                  </p>
+                  </time>
                 </div>
                 {post.readingTime && (
                   <div className="flex items-center gap-1">
@@ -335,7 +410,20 @@ export default function BlogPost() {
                 remarkPlugins={[remarkBreaks]}
                 rehypePlugins={[rehypeSlug]}
                 components={{
-                  code: CodeBlock
+                  code: CodeBlock,
+                  img: ({ node, ...props }) => (
+                    <img 
+                      {...props} 
+                      loading="lazy" 
+                      decoding="async" 
+                      className="rounded-xl w-full object-cover my-8" 
+                      alt={props.alt || "Blog post image"} 
+                    />
+                  ),
+                  a: ({ node, ...props }) => (
+                    <a {...props} target="_blank" rel="noopener noreferrer" />
+                  ),
+                  h1: ({ node, ...props }) => <h2 {...props} /> // Prevent multiple H1s
                 }}
               >
                 {post.content}
@@ -384,6 +472,7 @@ export default function BlogPost() {
                     <Link
                       key={relatedPost.id}
                       to={isBlogSubdomain ? `/${relatedPost.slug}` : `/blog/${relatedPost.slug}`}
+                      onMouseEnter={() => prefetchBlogPost(relatedPost.slug)}
                       className="group flex flex-col gap-4 rounded-2xl bg-white/5 p-4 transition-colors hover:bg-white/10 border border-white/5 hover:border-white/10"
                     >
                       {relatedPost.coverImage && (

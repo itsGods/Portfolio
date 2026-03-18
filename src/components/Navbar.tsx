@@ -1,6 +1,7 @@
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { prefetchBlogPosts } from "../utils/cache";
 
 const navItems = ["Home", "Projects", "About", "Skills", "Contact", "Blog"];
 
@@ -91,6 +92,7 @@ export default function Navbar() {
                     {isBlog ? (
                       <Link
                         to={href}
+                        onMouseEnter={() => prefetchBlogPosts()}
                         aria-label={`Go to ${item} page`}
                         className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/70 transition-colors hover:text-white"
                       >
@@ -179,6 +181,7 @@ export default function Navbar() {
                       <Link
                         to={href}
                         onClick={() => setIsOpen(false)}
+                        onMouseEnter={() => prefetchBlogPosts()}
                         aria-label={`Go to ${item} page`}
                         className="group relative flex items-center gap-4 font-display text-5xl font-bold tracking-tighter text-white transition-colors hover:text-brand-orange"
                       >

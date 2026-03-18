@@ -11,6 +11,7 @@ import PageTransition from "../components/PageTransition";
 import { OptimizedImage } from "../components/OptimizedImage";
 
 import { useStructuredData } from "../hooks/useStructuredData";
+import { blogCache, CACHE_TTL, prefetchBlogPost } from "../utils/cache";
 
 interface Post {
   id: string;
@@ -26,11 +27,11 @@ interface Post {
 }
 
 export default function BlogList() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [allTags, setAllTags] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  const [hasMore, setHasMore] = useState(false);
+  const [posts, setPosts] = useState<Post[]>(blogCache.posts);
+  const [allTags, setAllTags] = useState<string[]>(blogCache.allTags);
+  const [loading, setLoading] = useState(blogCache.posts.length === 0);
+  const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(blogCache.lastVisible);
+  const [hasMore, setHasMore] = useState(blogCache.hasMore);
   const [loadingMore, setLoadingMore] = useState(false);
   const { pathname } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -65,6 +66,12 @@ export default function BlogList() {
 
   useEffect(() => {
     const fetchPosts = async () => {
+      const now = Date.now();
+      if (blogCache.posts.length > 0 && now - blogCache.lastFetched < CACHE_TTL) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const { collection, query, where, orderBy, limit, getDocs } = await import("firebase/firestore");
         const { db } = await import("../firebase");
@@ -89,12 +96,23 @@ export default function BlogList() {
             post.tags.forEach(tag => tags.add(tag));
           }
         });
-        setAllTags(Array.from(tags).sort());
+        
+        const sortedTags = Array.from(tags).sort();
+        const lastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+        const more = snapshot.docs.length === 9;
 
+        setAllTags(sortedTags);
         setPosts(postsData);
-        setLastVisible(snapshot.docs[snapshot.docs.length - 1] || null);
-        setHasMore(snapshot.docs.length === 9);
+        setLastVisible(lastDoc);
+        setHasMore(more);
         setLoading(false);
+
+        // Update Cache
+        blogCache.posts = postsData;
+        blogCache.allTags = sortedTags;
+        blogCache.lastVisible = lastDoc;
+        blogCache.hasMore = more;
+        blogCache.lastFetched = now;
       } catch (error) {
         console.error("Error fetching posts:", error);
         setLoading(false);
@@ -132,11 +150,24 @@ export default function BlogList() {
           post.tags.forEach(tag => newTags.add(tag));
         }
       });
-      setAllTags(Array.from(newTags).sort());
+      
+      const sortedTags = Array.from(newTags).sort();
+      const lastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+      const more = snapshot.docs.length === 9;
 
-      setPosts((prev) => [...prev, ...newPosts]);
-      setLastVisible(snapshot.docs[snapshot.docs.length - 1] || null);
-      setHasMore(snapshot.docs.length === 9);
+      setAllTags(sortedTags);
+      setPosts((prev) => {
+        const updatedPosts = [...prev, ...newPosts];
+        blogCache.posts = updatedPosts;
+        return updatedPosts;
+      });
+      setLastVisible(lastDoc);
+      setHasMore(more);
+
+      // Update Cache
+      blogCache.allTags = sortedTags;
+      blogCache.lastVisible = lastDoc;
+      blogCache.hasMore = more;
     } catch (error) {
       console.error("Error fetching more posts:", error);
     } finally {
@@ -159,11 +190,12 @@ export default function BlogList() {
   }, [posts, searchQuery, selectedTag]);
 
   const isBlogSubdomain = window.location.hostname.startsWith('blog.');
+  const canonicalUrl = "https://tghabib.com/blog";
 
   useStructuredData({
     "@context": "https://schema.org",
     "@type": "Blog",
-    "url": "https://tghabib.com/blog",
+    "url": canonicalUrl,
     "name": "Habib Dev Blog",
     "description": "Technical articles on React, Firebase, Vite, TypeScript, and solo development.",
     "blogPost": posts.map(post => ({
@@ -180,7 +212,23 @@ export default function BlogList() {
         <Helmet>
           <title>Dev Blog | Habib — Full-Stack Developer & Vibecoder</title>
           <meta name="description" content="Technical articles on React, Firebase, Vite, TypeScript, and solo development by Habib — a Full-Stack Developer and Vibecoder." />
-          <link rel="canonical" href={`https://tghabib.com${pathname}`} />
+          <meta name="keywords" content="Blog, React, Firebase, TypeScript, Web Development, Vibecoder, Frontend, Full-Stack" />
+          <link rel="canonical" href={canonicalUrl} />
+          
+          {/* Open Graph / Facebook */}
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content={canonicalUrl} />
+          <meta property="og:title" content="Dev Blog | Habib — Full-Stack Developer & Vibecoder" />
+          <meta property="og:description" content="Technical articles on React, Firebase, Vite, TypeScript, and solo development by Habib." />
+          <meta property="og:image" content="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png" />
+
+          {/* Twitter */}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:url" content={canonicalUrl} />
+          <meta name="twitter:title" content="Dev Blog | Habib — Full-Stack Developer & Vibecoder" />
+          <meta name="twitter:description" content="Technical articles on React, Firebase, Vite, TypeScript, and solo development by Habib." />
+          <meta name="twitter:image" content="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png" />
+          <meta name="twitter:creator" content="@tghabib" />
         </Helmet>
         
         <CustomCursor />
@@ -266,6 +314,7 @@ export default function BlogList() {
                 <Link
                   key={post.id}
                   to={isBlogSubdomain ? `/${post.slug}` : `/blog/${post.slug}`}
+                  onMouseEnter={() => prefetchBlogPost(post.slug)}
                   className="group relative flex flex-col gap-6 rounded-2xl bg-brand-dark p-6 transition-colors hover:bg-brand-gray"
                 >
                   {post.coverImage && (
@@ -285,9 +334,9 @@ export default function BlogList() {
                     <div className="mb-4 flex flex-wrap items-center gap-3">
                       <div className="flex items-center gap-3">
                         <div className="h-[1px] w-6 bg-brand-orange transition-all duration-500 group-hover:w-12" />
-                        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-brand-orange">
+                        <time dateTime={post.createdAt?.toDate()?.toISOString()} className="font-mono text-[10px] uppercase tracking-[0.2em] text-brand-orange">
                           {post.createdAt?.toDate() ? post.createdAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown date'}
-                        </p>
+                        </time>
                       </div>
                       {post.readingTime && (
                         <div className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">

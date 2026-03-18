@@ -26,10 +26,12 @@ export default async (request: Request, context: Context) => {
 
     // Fetch post from Firestore REST API
     // We need the project ID and database ID from environment variables
+    // @ts-ignore
     const projectId = Deno.env.get("VITE_FIREBASE_PROJECT_ID") || "gen-lang-client-0251371539";
+    // @ts-ignore
     const databaseId = Deno.env.get("VITE_FIRESTORE_DATABASE_ID") || "ai-studio-9b8a817a-c0b3-4eb6-a24e-ec5bd5bb6427";
     
-    const firestoreUrl = \`https://firestore.googleapis.com/v1/projects/\${projectId}/databases/\${databaseId}/documents:runQuery\`;
+    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents:runQuery`;
     
     const queryPayload = {
       structuredQuery: {
@@ -68,7 +70,7 @@ export default async (request: Request, context: Context) => {
           const coverImage = doc.coverImage?.stringValue || "";
           const createdAt = doc.createdAt?.timestampValue || new Date().toISOString();
           const updatedAt = doc.updatedAt?.timestampValue || createdAt;
-          const canonicalUrl = \`https://tghabib.com/blog/\${slug}\`;
+          const canonicalUrl = `https://tghabib.com/blog/${slug}`;
           
           // Generate JSON-LD Structured Data
           const jsonLd = {
@@ -100,26 +102,26 @@ export default async (request: Request, context: Context) => {
           
           // Inject meta tags by replacing existing ones
           let modifiedHtml = html
-            .replace(/<title>.*?<\/title>/i, \`<title>\${title}</title>\`)
+            .replace(/<title>.*?<\/title>/i, `<title>${title}</title>`)
             .replace(/<link rel="canonical" href=".*?"\s*\/?>/i, '')
-            .replace(/<meta name="title" content=".*?"\s*\/?>/i, \`<meta name="title" content="\${title}" />\n    <link rel="canonical" href="\${canonicalUrl}" />\`)
-            .replace(/<meta name="description" content=".*?"\s*\/?>/i, \`<meta name="description" content="\${description}" />\`)
-            .replace(/<meta property="og:title" content=".*?"\s*\/?>/i, \`<meta property="og:title" content="\${title}" />\`)
-            .replace(/<meta property="og:description" content=".*?"\s*\/?>/i, \`<meta property="og:description" content="\${description}" />\`)
-            .replace(/<meta property="og:type" content=".*?"\s*\/?>/i, \`<meta property="og:type" content="article" />\`)
-            .replace(/<meta property="og:url" content=".*?"\s*\/?>/i, \`<meta property="og:url" content="\${canonicalUrl}" />\`)
-            .replace(/<meta property="twitter:title" content=".*?"\s*\/?>/i, \`<meta property="twitter:title" content="\${title}" />\`)
-            .replace(/<meta property="twitter:description" content=".*?"\s*\/?>/i, \`<meta property="twitter:description" content="\${description}" />\`)
-            .replace(/<meta property="twitter:url" content=".*?"\s*\/?>/i, \`<meta property="twitter:url" content="\${canonicalUrl}" />\`);
+            .replace(/<meta name="title" content=".*?"\s*\/?>/i, `<meta name="title" content="${title}" />\n    <link rel="canonical" href="${canonicalUrl}" />`)
+            .replace(/<meta name="description" content=".*?"\s*\/?>/i, `<meta name="description" content="${description}" />`)
+            .replace(/<meta property="og:title" content=".*?"\s*\/?>/i, `<meta property="og:title" content="${title}" />`)
+            .replace(/<meta property="og:description" content=".*?"\s*\/?>/i, `<meta property="og:description" content="${description}" />`)
+            .replace(/<meta property="og:type" content=".*?"\s*\/?>/i, `<meta property="og:type" content="article" />`)
+            .replace(/<meta property="og:url" content=".*?"\s*\/?>/i, `<meta property="og:url" content="${canonicalUrl}" />`)
+            .replace(/<meta property="twitter:title" content=".*?"\s*\/?>/i, `<meta property="twitter:title" content="${title}" />`)
+            .replace(/<meta property="twitter:description" content=".*?"\s*\/?>/i, `<meta property="twitter:description" content="${description}" />`)
+            .replace(/<meta property="twitter:url" content=".*?"\s*\/?>/i, `<meta property="twitter:url" content="${canonicalUrl}" />`);
 
           if (coverImage) {
             modifiedHtml = modifiedHtml
-              .replace(/<meta property="og:image" content=".*?"\s*\/?>/i, \`<meta property="og:image" content="\${coverImage}" />\`)
-              .replace(/<meta property="twitter:image" content=".*?"\s*\/?>/i, \`<meta property="twitter:image" content="\${coverImage}" />\`);
+              .replace(/<meta property="og:image" content=".*?"\s*\/?>/i, `<meta property="og:image" content="${coverImage}" />`)
+              .replace(/<meta property="twitter:image" content=".*?"\s*\/?>/i, `<meta property="twitter:image" content="${coverImage}" />`);
           }
 
           // Inject JSON-LD
-          modifiedHtml = modifiedHtml.replace('</head>', \`  <script type="application/ld+json">\n\${JSON.stringify(jsonLd, null, 2)}\n</script>\n</head>\`);
+          modifiedHtml = modifiedHtml.replace('</head>', `  <script type="application/ld+json">\n${JSON.stringify(jsonLd, null, 2)}\n</script>\n</head>`);
 
           return new Response(modifiedHtml, {
             headers: {
