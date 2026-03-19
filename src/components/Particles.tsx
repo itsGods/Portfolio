@@ -69,6 +69,8 @@ export default function Particles() {
 
   return (
     <canvas
+      aria-hidden="true"
+      inert={true}
       ref={canvasRef}
       className="pointer-events-none fixed inset-0 z-0 h-full w-full opacity-30 mix-blend-screen"
     />

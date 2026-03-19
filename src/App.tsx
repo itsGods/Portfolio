@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import { HelmetProvider } from "react-helmet-async";
 import { AnimatePresence } from "motion/react";
 import useAnalytics from "./hooks/useAnalytics";
+import RouteAnnouncer from "./components/RouteAnnouncer";
+import { ScrollProvider } from "./components/ScrollProvider";
 
 // Lazy load pages for route-level code splitting
 const Home = React.lazy(() => import("./pages/Home"));
@@ -24,6 +26,7 @@ function AnimatedRoutes() {
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-orange border-t-transparent" />
         </div>
       }>
+        <RouteAnnouncer />
         <Routes location={location} key={location.pathname}>
           {isBlogSubdomain ? (
             <>
@@ -48,9 +51,11 @@ function AnimatedRoutes() {
 export default function App() {
   return (
     <HelmetProvider>
-      <Router>
-        <AnimatedRoutes />
-      </Router>
+      <ScrollProvider>
+        <Router>
+          <AnimatedRoutes />
+        </Router>
+      </ScrollProvider>
     </HelmetProvider>
   );
 }

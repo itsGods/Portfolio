@@ -24,6 +24,15 @@ export default async (request: Request, context: Context) => {
 
     const html = await response.text();
 
+    // Generate a random nonce for CSP
+    const nonce = crypto.randomUUID().replace(/-/g, '').slice(0, 16);
+    
+    // Inject nonce into script tags
+    let modifiedHtml = html.replace(/<script /g, `<script nonce="${nonce}" `);
+
+    // Add CSP header
+    const cspHeader = `default-src 'self'; script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src 'self' https://www.google.com/recaptcha/ https://recaptcha.net/;`;
+
     // Fetch post from Firestore REST API
     // We need the project ID and database ID from environment variables
     // @ts-ignore
@@ -67,7 +76,10 @@ export default async (request: Request, context: Context) => {
         if (isPublished || (previewToken && previewToken === docPreviewToken)) {
           const title = doc.seoTitle?.stringValue || doc.title?.stringValue || "Blog Post | TG Habib";
           const description = doc.seoDescription?.stringValue || doc.excerpt?.stringValue || "Read this amazing blog post by TG Habib.";
-          const coverImage = doc.coverImage?.stringValue || "";
+          let coverImage = doc.coverImage?.stringValue || "";
+          if (coverImage && coverImage.startsWith('/')) {
+            coverImage = `https://tghabib.com${coverImage}`;
+          }
           const createdAt = doc.createdAt?.timestampValue || new Date().toISOString();
           const updatedAt = doc.updatedAt?.timestampValue || createdAt;
           const canonicalUrl = `https://tghabib.com/blog/${slug}`;
@@ -101,7 +113,7 @@ export default async (request: Request, context: Context) => {
           };
           
           // Inject meta tags by replacing existing ones
-          let modifiedHtml = html
+          modifiedHtml = modifiedHtml
             .replace(/<title>.*?<\/title>/i, `<title>${title}</title>`)
             .replace(/<link rel="canonical" href=".*?"\s*\/?>/i, '')
             .replace(/<meta name="title" content=".*?"\s*\/?>/i, `<meta name="title" content="${title}" />\n    <link rel="canonical" href="${canonicalUrl}" />`)
@@ -110,14 +122,14 @@ export default async (request: Request, context: Context) => {
             .replace(/<meta property="og:description" content=".*?"\s*\/?>/i, `<meta property="og:description" content="${description}" />`)
             .replace(/<meta property="og:type" content=".*?"\s*\/?>/i, `<meta property="og:type" content="article" />`)
             .replace(/<meta property="og:url" content=".*?"\s*\/?>/i, `<meta property="og:url" content="${canonicalUrl}" />`)
-            .replace(/<meta property="twitter:title" content=".*?"\s*\/?>/i, `<meta property="twitter:title" content="${title}" />`)
-            .replace(/<meta property="twitter:description" content=".*?"\s*\/?>/i, `<meta property="twitter:description" content="${description}" />`)
-            .replace(/<meta property="twitter:url" content=".*?"\s*\/?>/i, `<meta property="twitter:url" content="${canonicalUrl}" />`);
+            .replace(/<meta name="twitter:title" content=".*?"\s*\/?>/i, `<meta name="twitter:title" content="${title}" />`)
+            .replace(/<meta name="twitter:description" content=".*?"\s*\/?>/i, `<meta name="twitter:description" content="${description}" />`)
+            .replace(/<meta name="twitter:url" content=".*?"\s*\/?>/i, `<meta name="twitter:url" content="${canonicalUrl}" />`);
 
           if (coverImage) {
             modifiedHtml = modifiedHtml
               .replace(/<meta property="og:image" content=".*?"\s*\/?>/i, `<meta property="og:image" content="${coverImage}" />`)
-              .replace(/<meta property="twitter:image" content=".*?"\s*\/?>/i, `<meta property="twitter:image" content="${coverImage}" />`);
+              .replace(/<meta name="twitter:image" content=".*?"\s*\/?>/i, `<meta name="twitter:image" content="${coverImage}" />`);
           }
 
           // Inject JSON-LD
@@ -126,15 +138,17 @@ export default async (request: Request, context: Context) => {
           return new Response(modifiedHtml, {
             headers: {
               "content-type": "text/html;charset=UTF-8",
+              "Content-Security-Policy": cspHeader
             },
           });
         }
       }
     }
     
-    return new Response(html, {
+    return new Response(modifiedHtml, {
       headers: {
         "content-type": "text/html;charset=UTF-8",
+        "Content-Security-Policy": cspHeader
       },
     });
   } catch (error) {

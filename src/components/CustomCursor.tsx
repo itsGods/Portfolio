@@ -44,6 +44,7 @@ export default function CustomCursor() {
     <>
       {/* Main Cursor Dot */}
       <motion.div
+        aria-hidden="true" inert={true}
         className="pointer-events-none fixed left-0 top-0 z-[9999] hidden h-8 w-8 items-center justify-center rounded-full border border-brand-orange mix-blend-difference md:flex"
         style={{
           x: cursorXSpring,

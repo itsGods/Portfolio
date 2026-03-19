@@ -1,6 +1,5 @@
 import { useEffect, lazy, Suspense } from "react";
 import { Helmet } from "react-helmet-async";
-import Lenis from "lenis";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import Grain from "../components/Grain";
@@ -33,36 +32,6 @@ export default function Home() {
     ]
   });
 
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: "vertical",
-      gestureOrientation: "vertical",
-      smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 2,
-    });
-
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-
-    const handleStop = () => lenis.stop();
-    const handleStart = () => lenis.start();
-    window.addEventListener('stop-lenis', handleStop);
-    window.addEventListener('start-lenis', handleStart);
-
-    return () => {
-      window.removeEventListener('stop-lenis', handleStop);
-      window.removeEventListener('start-lenis', handleStart);
-      lenis.destroy();
-    };
-  }, []);
-
   return (
     <PageTransition>
       <Helmet>
@@ -74,7 +43,13 @@ export default function Home() {
         <meta property="og:description" content="TG Habib is a Full-Stack Developer and Vibecoder building fast, modern web apps with React, Firebase, and TypeScript." />
         <meta property="og:url" content="https://tghabib.com/" />
         <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png" />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content="https://tghabib.com/" />
+        <meta name="twitter:title" content="TG Habib | Full-Stack Developer & Vibecoder" />
+        <meta name="twitter:description" content="TG Habib is a Full-Stack Developer and Vibecoder building fast, modern web apps with React, Firebase, and TypeScript." />
+        <meta name="twitter:image" content="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png" />
+        <meta name="twitter:creator" content="@tghabib" />
       </Helmet>
       <main className="relative bg-brand-black text-brand-light selection:bg-brand-orange selection:text-white md:cursor-none">
         <CustomCursor />

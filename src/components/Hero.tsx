@@ -1,5 +1,6 @@
-import { LazyMotion, domAnimation, m, useScroll, useTransform, useSpring } from "motion/react";
+import { LazyMotion, domAnimation, m, useScroll, useTransform } from "motion/react";
 import { useEffect, useRef } from "react";
+import { useAccessibleSpring } from "../hooks/useAccessibleSpring";
 
 export default function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -15,10 +16,10 @@ export default function Hero() {
 
   // Spring physics for mouse movement
   const springConfig = { damping: 30, stiffness: 50, mass: 0.5 };
-  const mouseX = useSpring(0, springConfig);
-  const mouseY = useSpring(0, springConfig);
-  const rotateX = useSpring(0, springConfig);
-  const rotateY = useSpring(0, springConfig);
+  const mouseX = useAccessibleSpring(0, springConfig);
+  const mouseY = useAccessibleSpring(0, springConfig);
+  const rotateX = useAccessibleSpring(0, springConfig);
+  const rotateY = useAccessibleSpring(0, springConfig);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -54,16 +55,17 @@ export default function Hero() {
         </h1>
 
         {/* Layer 0: Architectural Grid */}
-        <div className="absolute inset-0 z-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_20%,transparent_100%)]" />
+        <div aria-hidden="true" inert={true} className="absolute inset-0 z-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_20%,transparent_100%)]" />
 
         {/* Layer 1: Interactive Background Glow */}
         <m.div
+          aria-hidden="true" inert={true}
           style={{ x: mouseX, y: mouseY }}
           className="absolute left-1/2 top-1/2 z-0 h-[60vh] w-[60vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-orange/20 blur-[120px] mix-blend-screen"
         />
 
         {/* Layer 2: Deep Background Typography */}
-        <m.div style={{ y: yBg, x: useTransform(mouseX, v => v * 0.5) }} className="pointer-events-none absolute top-1/4 z-0 flex w-full justify-center opacity-5">
+        <m.div aria-hidden="true" inert={true} style={{ y: yBg, x: useTransform(mouseX, (v: number) => v * 0.5) }} className="pointer-events-none absolute top-1/4 z-0 flex w-full justify-center opacity-5">
           <span className="font-display text-[20vw] font-black tracking-tighter text-white">CREATIVE</span>
         </m.div>
 
@@ -117,7 +119,7 @@ export default function Hero() {
 
         {/* Layer 4: Foreground Floating Elements (Parallax) */}
         <m.div 
-          style={{ y: yFg, x: useTransform(mouseX, v => v * 1.5) }} 
+          style={{ y: yFg, x: useTransform(mouseX, (v: number) => v * 1.5) }} 
           className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
         >
           {/* Outline Typography Overlapping Image */}
@@ -166,11 +168,13 @@ export default function Hero() {
 
           {/* Floating Glassmorphic Elements */}
           <m.div 
+            aria-hidden="true" inert={true}
             animate={{ y: [0, 20, 0], rotate: [0, 5, 0] }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
             className="absolute left-[15%] top-[20%] h-24 w-24 rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
           />
           <m.div 
+            aria-hidden="true" inert={true}
             animate={{ y: [0, -30, 0], rotate: [0, -10, 0] }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
             className="absolute bottom-[20%] right-[15%] h-32 w-32 rounded-full border border-brand-orange/20 bg-brand-orange/5 backdrop-blur-md"
@@ -178,11 +182,12 @@ export default function Hero() {
         </m.div>
 
         {/* Layer 5: Vignette & Gradient */}
-        <div className="pointer-events-none absolute inset-0 z-30 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(10,10,10,0.8)_100%)]" />
-        <div className="pointer-events-none absolute bottom-0 left-0 z-30 h-48 w-full bg-gradient-to-b from-transparent to-brand-black" />
+        <div aria-hidden="true" inert={true} className="pointer-events-none absolute inset-0 z-30 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(10,10,10,0.8)_100%)]" />
+        <div aria-hidden="true" inert={true} className="pointer-events-none absolute bottom-0 left-0 z-30 h-48 w-full bg-gradient-to-b from-transparent to-brand-black" />
 
         {/* Scroll Indicator */}
         <m.div
+          aria-hidden="true" inert={true}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 1.5 }}

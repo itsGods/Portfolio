@@ -29,7 +29,7 @@ export default function About() {
   return (
     <section id="about" ref={containerRef} className="relative w-full bg-brand-black py-32 md:py-48 overflow-hidden">
       {/* Background Elements */}
-      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[50vh] w-[50vw] rounded-full bg-brand-orange/5 blur-[120px] pointer-events-none" />
+      <div aria-hidden="true" inert={true} className="absolute left-0 top-1/2 -translate-y-1/2 h-[50vh] w-[50vw] rounded-full bg-brand-orange/5 blur-[120px] pointer-events-none" />
       
       <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-24 px-6 md:flex-row md:px-12">
         
@@ -125,15 +125,16 @@ export default function About() {
             <div className="absolute inset-0 z-10 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent pointer-events-none" />
             
             {/* Decorative Elements */}
-            <div className="absolute -inset-2 z-20 border border-white/5 bg-white/[0.02] transition-colors duration-500 group-hover:border-brand-orange/20 group-hover:bg-brand-orange/[0.02] pointer-events-none" />
+            <div aria-hidden="true" inert={true} className="absolute -inset-2 z-20 border border-white/5 bg-white/[0.02] transition-colors duration-500 group-hover:border-brand-orange/20 group-hover:bg-brand-orange/[0.02] pointer-events-none" />
             
-            <div className="absolute -left-4 -top-4 h-8 w-8 border-l-2 border-t-2 border-brand-orange/50 transition-all duration-500 group-hover:-left-6 group-hover:-top-6 group-hover:border-brand-orange" />
-            <div className="absolute -right-4 -top-4 h-8 w-8 border-r-2 border-t-2 border-brand-orange/50 transition-all duration-500 group-hover:-right-6 group-hover:-top-6 group-hover:border-brand-orange" />
-            <div className="absolute -bottom-4 -left-4 h-8 w-8 border-b-2 border-l-2 border-brand-orange/50 transition-all duration-500 group-hover:-bottom-6 group-hover:-left-6 group-hover:border-brand-orange" />
-            <div className="absolute -bottom-4 -right-4 h-8 w-8 border-b-2 border-r-2 border-brand-orange/50 transition-all duration-500 group-hover:-bottom-6 group-hover:-right-6 group-hover:border-brand-orange" />
+            <div aria-hidden="true" inert={true} className="absolute -left-4 -top-4 h-8 w-8 border-l-2 border-t-2 border-brand-orange/50 transition-all duration-500 group-hover:-left-6 group-hover:-top-6 group-hover:border-brand-orange" />
+            <div aria-hidden="true" inert={true} className="absolute -right-4 -top-4 h-8 w-8 border-r-2 border-t-2 border-brand-orange/50 transition-all duration-500 group-hover:-right-6 group-hover:-top-6 group-hover:border-brand-orange" />
+            <div aria-hidden="true" inert={true} className="absolute -bottom-4 -left-4 h-8 w-8 border-b-2 border-l-2 border-brand-orange/50 transition-all duration-500 group-hover:-bottom-6 group-hover:-left-6 group-hover:border-brand-orange" />
+            <div aria-hidden="true" inert={true} className="absolute -bottom-4 -right-4 h-8 w-8 border-b-2 border-r-2 border-brand-orange/50 transition-all duration-500 group-hover:-bottom-6 group-hover:-right-6 group-hover:border-brand-orange" />
             
             {/* Holographic Scanline */}
             <motion.div 
+              aria-hidden="true" inert={true}
               className="absolute inset-0 z-20 bg-gradient-to-b from-transparent via-brand-orange/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none"
               animate={{ y: ["-100%", "200%"] }}
               transition={{ duration: 3, ease: "linear", repeat: Infinity }}
@@ -141,6 +142,7 @@ export default function About() {
             
             {/* Floating Badge */}
             <motion.div 
+              aria-hidden="true" inert={true}
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               className="absolute -right-8 top-1/4 hidden rounded-full border border-white/10 bg-white/5 px-6 py-3 backdrop-blur-md md:block pointer-events-none"

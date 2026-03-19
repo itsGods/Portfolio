@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import type { Timestamp } from "firebase/firestore";
 import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import rehypeSlug from "rehype-slug";
+import rehypeSanitize from "rehype-sanitize";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import Navbar from "../components/Navbar";
@@ -19,6 +20,8 @@ import { useReadingProgress } from "../hooks/useReadingProgress";
 import { stripAndTruncate } from "../lib/utils";
 import { OptimizedImage } from "../components/OptimizedImage";
 import PostReactions from "../components/PostReactions";
+import { getCachedPromise } from "../utils/suspenseCache";
+import { prefetchBlogPost } from "../utils/cache";
 
 const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
   const [copied, setCopied] = useState(false);
@@ -82,21 +85,63 @@ interface Post {
   views?: number;
 }
 
-import { blogCache, prefetchBlogPost } from "../utils/cache";
+const fetchPostData = async (slug: string, previewToken: string | null) => {
+  const { collection, query, where, getDocs, orderBy, limit } = await import("firebase/firestore");
+  const { db } = await import("../firebase");
+
+  let q;
+  if (previewToken) {
+    q = query(collection(db, "posts"), where("slug", "==", slug), where("previewToken", "==", previewToken));
+  } else {
+    q = query(collection(db, "posts"), where("slug", "==", slug), where("published", "==", true));
+  }
+  const snapshot = await getDocs(q);
+  
+  if (snapshot.empty) {
+    return { post: null, relatedPosts: [] };
+  }
+
+  const docRef = snapshot.docs[0].ref;
+  const currentPost = { id: snapshot.docs[0].id, ...(snapshot.docs[0].data() as any) } as Post;
+
+  // Increment view count (only if not preview mode)
+  if (!previewToken) {
+    const { updateDoc, increment } = await import("firebase/firestore");
+    try {
+      await updateDoc(docRef, {
+        views: increment(1)
+      });
+    } catch (e) {
+      console.error("Error updating views:", e);
+    }
+  }
+
+  // Fetch related posts
+  const relatedQ = query(
+    collection(db, "posts"), 
+    where("published", "==", true),
+    orderBy("createdAt", "desc"),
+    limit(4)
+  );
+  const relatedSnapshot = await getDocs(relatedQ);
+  const related = relatedSnapshot.docs
+    .map(doc => ({ id: doc.id, ...doc.data() } as Post))
+    .filter(p => p.id !== currentPost.id)
+    .slice(0, 3);
+
+  return { post: currentPost, relatedPosts: related };
+};
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
-  
-  // Try to find the post in cache first
-  const cachedPost = blogCache.posts.find(p => p.slug === slug) || blogCache.postDetails[slug || ""];
-  
-  const [post, setPost] = useState<Post | null>(cachedPost || null);
-  const [relatedPosts, setRelatedPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(!cachedPost);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const scrollProgress = useReadingProgress();
   const { pathname, search } = useLocation();
   const previewToken = new URLSearchParams(search).get("preview");
+
+  const postDataPromise = getCachedPromise(`post-${slug}-${previewToken || 'published'}`, () => fetchPostData(slug || '', previewToken));
+  const { post, relatedPosts } = use(postDataPromise);
+
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const scrollProgress = useReadingProgress();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -127,74 +172,6 @@ export default function BlogPost() {
     }
   }, [scrollProgress, post, slug]);
 
-  useEffect(() => {
-    const fetchPost = async () => {
-      if (!slug) return;
-      
-      // Check cache first when slug changes
-      const cached = blogCache.posts.find(p => p.slug === slug) || blogCache.postDetails[slug];
-      if (cached) {
-        setPost(cached);
-        setLoading(false);
-      } else {
-        setLoading(true);
-      }
-
-      try {
-        const { collection, query, where, getDocs, orderBy, limit } = await import("firebase/firestore");
-        const { db } = await import("../firebase");
-
-        let q;
-        if (previewToken) {
-          q = query(collection(db, "posts"), where("slug", "==", slug), where("previewToken", "==", previewToken));
-        } else {
-          q = query(collection(db, "posts"), where("slug", "==", slug), where("published", "==", true));
-        }
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-          const docRef = snapshot.docs[0].ref;
-          const currentPost = { id: snapshot.docs[0].id, ...(snapshot.docs[0].data() as any) } as Post;
-          setPost(currentPost);
-          
-          // Save to cache
-          blogCache.postDetails[slug] = currentPost;
-
-          // Increment view count (only if not preview mode)
-          if (!previewToken) {
-            const { updateDoc, increment } = await import("firebase/firestore");
-            try {
-              await updateDoc(docRef, {
-                views: increment(1)
-              });
-            } catch (e) {
-              console.error("Error updating views:", e);
-            }
-          }
-
-          // Fetch related posts (just getting latest 3 for now, excluding current)
-          const relatedQ = query(
-            collection(db, "posts"), 
-            where("published", "==", true),
-            orderBy("createdAt", "desc"),
-            limit(4)
-          );
-          const relatedSnapshot = await getDocs(relatedQ);
-          const related = relatedSnapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data() } as Post))
-            .filter(p => p.id !== currentPost.id)
-            .slice(0, 3);
-          setRelatedPosts(related);
-        }
-      } catch (error) {
-        console.error("Error fetching post:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPost();
-  }, [slug]);
-
   useStructuredData(post ? [
     {
       "@context": "https://schema.org",
@@ -220,7 +197,7 @@ export default function BlogPost() {
           "url": "https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png"
         }
       },
-      "image": post.coverImage ? [post.coverImage] : [],
+      "image": post.coverImage ? [post.coverImage.startsWith('http') ? post.coverImage : `https://tghabib.com${post.coverImage}`] : [],
       "url": `https://tghabib.com/blog/${post.slug}`,
       "keywords": post.tags?.join(", ") || ""
     },
@@ -234,14 +211,6 @@ export default function BlogPost() {
       ]
     }
   ] : []);
-
-  if (loading) {
-    return (
-      <main className="relative min-h-screen bg-brand-black flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-orange border-t-transparent" />
-      </main>
-    );
-  }
 
   if (!post) {
     return (
@@ -291,7 +260,7 @@ export default function BlogPost() {
           <meta property="og:url" content={canonicalUrl} />
           <meta property="og:title" content={metaTitle} />
           <meta property="og:description" content={metaDescription} />
-          {post.coverImage && <meta property="og:image" content={post.coverImage} />}
+          {post.coverImage && <meta property="og:image" content={post.coverImage.startsWith('http') ? post.coverImage : `https://tghabib.com${post.coverImage}`} />}
           <meta property="article:published_time" content={post.createdAt?.toDate?.().toISOString() || ''} />
           <meta property="article:author" content="https://tghabib.com" />
           {post.tags?.map(tag => (
@@ -303,7 +272,7 @@ export default function BlogPost() {
           <meta name="twitter:url" content={canonicalUrl} />
           <meta name="twitter:title" content={metaTitle} />
           <meta name="twitter:description" content={metaDescription} />
-          {post.coverImage && <meta name="twitter:image" content={post.coverImage} />}
+          {post.coverImage && <meta name="twitter:image" content={post.coverImage.startsWith('http') ? post.coverImage : `https://tghabib.com${post.coverImage}`} />}
           <meta name="twitter:creator" content="@tghabib" />
         </Helmet>
         
@@ -357,19 +326,31 @@ export default function BlogPost() {
 
           <article>
             <header className="mb-12">
-              <div className="mb-6 flex flex-wrap items-center gap-4 text-brand-orange font-mono text-xs uppercase tracking-[0.2em]">
+              <div className="mb-8 flex flex-wrap items-center gap-6">
                 <div className="flex items-center gap-4">
-                  <div className="h-[1px] w-12 bg-brand-orange" />
-                  <time dateTime={post.createdAt?.toDate()?.toISOString()}>
-                    {post.createdAt?.toDate() ? post.createdAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown date'}
-                  </time>
-                </div>
-                {post.readingTime && (
-                  <div className="flex items-center gap-1">
-                    <Clock size={14} />
-                    <span>{post.readingTime} min read</span>
+                  <img 
+                    src="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/android-chrome-512x512.png" 
+                    alt="TG Habib" 
+                    className="w-12 h-12 rounded-full border border-white/10 object-cover"
+                  />
+                  <div className="flex flex-col">
+                    <span className="font-bold text-white text-sm">TG Habib</span>
+                    <div className="flex items-center gap-3 text-brand-orange font-mono text-[10px] sm:text-xs uppercase tracking-[0.2em] mt-1">
+                      <time dateTime={post.createdAt?.toDate()?.toISOString()}>
+                        {post.createdAt?.toDate() ? post.createdAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown date'}
+                      </time>
+                      {post.readingTime && (
+                        <>
+                          <span className="text-white/20">•</span>
+                          <span className="flex items-center gap-1">
+                            <Clock size={12} />
+                            <span>{post.readingTime} min read</span>
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
               <h1 className="font-display text-4xl font-bold tracking-tight text-white md:text-6xl lg:text-7xl mb-6">
                 {post.title}
@@ -405,10 +386,10 @@ export default function BlogPost() {
               </div>
             )}
 
-            <div className="prose prose-invert prose-lg max-w-none prose-headings:font-display prose-headings:font-bold prose-p:font-sans prose-p:text-white/80 prose-a:text-brand-orange hover:prose-a:text-brand-orange/80 prose-img:rounded-xl">
+            <div className="prose prose-invert prose-lg max-w-none prose-headings:font-display prose-headings:font-bold prose-headings:tracking-tight prose-p:font-sans prose-p:text-white/80 prose-p:leading-relaxed prose-a:text-brand-orange hover:prose-a:text-brand-orange/80 prose-img:rounded-2xl prose-img:shadow-2xl prose-blockquote:border-l-brand-orange prose-blockquote:bg-brand-orange/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-xl prose-blockquote:not-italic prose-blockquote:text-white/90 prose-li:marker:text-brand-orange prose-strong:text-white">
               <ReactMarkdown 
                 remarkPlugins={[remarkBreaks]}
-                rehypePlugins={[rehypeSlug]}
+                rehypePlugins={[rehypeSlug, rehypeSanitize]}
                 components={{
                   code: CodeBlock,
                   img: ({ node, ...props }) => (
@@ -451,13 +432,18 @@ export default function BlogPost() {
                   <PostReactions postId={post.id} initialReactions={post.reactions} />
                 </div>
 
-                <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 max-w-sm">
-                  <div className="w-12 h-12 rounded-full bg-brand-orange flex items-center justify-center text-xl font-bold text-white">
-                    H
-                  </div>
+                <div className="flex items-center gap-5 bg-white/5 p-6 rounded-2xl border border-white/10 max-w-md hover:bg-white/10 transition-colors">
+                  <img 
+                    src="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/android-chrome-512x512.png" 
+                    alt="TG Habib" 
+                    className="w-16 h-16 rounded-full border border-white/10 object-cover shadow-lg"
+                  />
                   <div>
-                    <h3 className="font-bold text-white">Habib</h3>
-                    <p className="text-sm text-white/60">Software Engineer & Designer</p>
+                    <h3 className="font-display text-xl font-bold text-white mb-1">TG Habib</h3>
+                    <p className="text-sm text-white/60 font-sans mb-2">Vibecoder & Full-Stack Developer building fast, modern web apps.</p>
+                    <a href="https://twitter.com/tghabib" target="_blank" rel="noopener noreferrer" className="text-xs font-mono text-brand-orange hover:text-white transition-colors uppercase tracking-widest">
+                      @tghabib
+                    </a>
                   </div>
                 </div>
               </div>
