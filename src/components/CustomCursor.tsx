@@ -31,12 +31,19 @@ export default function CustomCursor() {
       }
     };
 
-    window.addEventListener("mousemove", moveCursor);
-    window.addEventListener("mouseover", handleMouseOver);
+    // Check if device supports hover
+    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+    
+    if (!isTouchDevice) {
+      window.addEventListener("mousemove", moveCursor);
+      window.addEventListener("mouseover", handleMouseOver);
+    }
 
     return () => {
-      window.removeEventListener("mousemove", moveCursor);
-      window.removeEventListener("mouseover", handleMouseOver);
+      if (!isTouchDevice) {
+        window.removeEventListener("mousemove", moveCursor);
+        window.removeEventListener("mouseover", handleMouseOver);
+      }
     };
   }, [cursorX, cursorY]);
 

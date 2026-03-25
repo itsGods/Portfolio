@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, use } from "react";
+import { useState, useEffect, useRef, use, Suspense, lazy } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import type { Timestamp } from "firebase/firestore";
@@ -6,15 +6,13 @@ import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import rehypeSlug from "rehype-slug";
 import rehypeSanitize from "rehype-sanitize";
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import CustomCursor from "../components/CustomCursor";
 import Grain from "../components/Grain";
 import PageTransition from "../components/PageTransition";
 import TableOfContents from "../components/TableOfContents";
-import { ArrowLeft, Clock, Tag, Share2, Twitter, Linkedin, Link as LinkIcon, Copy, Check, ArrowUp } from "lucide-react";
+import { ArrowLeft, Clock, Tag, Share2, Twitter, Linkedin, Link as LinkIcon, Copy, Check, ArrowUp, Mail } from "lucide-react";
 import { useStructuredData } from "../hooks/useStructuredData";
 import { useReadingProgress } from "../hooks/useReadingProgress";
 import { stripAndTruncate } from "../lib/utils";
@@ -23,10 +21,21 @@ import PostReactions from "../components/PostReactions";
 import { getCachedPromise } from "../utils/suspenseCache";
 import { prefetchBlogPost } from "../utils/cache";
 
+// Lazy load syntax highlighter to improve performance
+const SyntaxHighlighter = lazy(() => import('react-syntax-highlighter').then(module => ({ default: module.Prism })));
+const vscDarkPlusPromise = import('react-syntax-highlighter/dist/esm/styles/prism').then(module => module.vscDarkPlus);
+
 const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
   const [copied, setCopied] = useState(false);
+  const [style, setStyle] = useState<any>(null);
   const match = /language-(\w+)/.exec(className || '');
   const codeString = String(children).replace(/\n$/, '');
+
+  useEffect(() => {
+    if (!inline && match) {
+      vscDarkPlusPromise.then(setStyle);
+    }
+  }, [inline, match]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(codeString);
@@ -46,14 +55,18 @@ const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
             {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
           </button>
         </div>
-        <SyntaxHighlighter
-          {...props}
-          children={codeString}
-          style={vscDarkPlus}
-          language={match[1]}
-          PreTag="div"
-          className="rounded-xl border border-white/10 !bg-black/50 !m-0"
-        />
+        <Suspense fallback={<div className="p-4 bg-black/50 rounded-xl border border-white/10 text-white/40 font-mono text-sm">Loading code...</div>}>
+          {style && (
+            <SyntaxHighlighter
+              {...props}
+              children={codeString}
+              style={style}
+              language={match[1]}
+              PreTag="div"
+              className="rounded-xl border border-white/10 !bg-black/50 !m-0"
+            />
+          )}
+        </Suspense>
       </div>
     );
   }
@@ -104,15 +117,16 @@ const fetchPostData = async (slug: string, previewToken: string | null) => {
   const docRef = snapshot.docs[0].ref;
   const currentPost = { id: snapshot.docs[0].id, ...(snapshot.docs[0].data() as any) } as Post;
 
-  // Increment view count (only if not preview mode)
+  // Increment view count (only if not preview mode and not viewed in this session)
   if (!previewToken) {
-    const { updateDoc, increment } = await import("firebase/firestore");
-    try {
-      await updateDoc(docRef, {
-        views: increment(1)
-      });
-    } catch (e) {
-      console.error("Error updating views:", e);
+    const viewedKey = `viewed_${currentPost.id}`;
+    if (typeof window !== 'undefined' && !localStorage.getItem(viewedKey)) {
+      try {
+        await fetch(`/api/views/${currentPost.id}`, { method: 'POST' });
+        localStorage.setItem(viewedKey, 'true');
+      } catch (e) {
+        console.error("Error updating views:", e);
+      }
     }
   }
 
@@ -142,6 +156,9 @@ export default function BlogPost() {
 
   const [showScrollTop, setShowScrollTop] = useState(false);
   const scrollProgress = useReadingProgress();
+  const [selectedText, setSelectedText] = useState("");
+  const [selectionPosition, setSelectionPosition] = useState({ x: 0, y: 0 });
+  const articleRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -151,6 +168,35 @@ export default function BlogPost() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleSelection = () => {
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed || !articleRef.current) {
+        setSelectedText("");
+        return;
+      }
+
+      // Check if selection is inside the article
+      if (articleRef.current.contains(selection.anchorNode)) {
+        const text = selection.toString().trim();
+        if (text.length > 0) {
+          const range = selection.getRangeAt(0);
+          const rect = range.getBoundingClientRect();
+          setSelectedText(text);
+          setSelectionPosition({
+            x: rect.left + rect.width / 2,
+            y: rect.top - 10
+          });
+        }
+      } else {
+        setSelectedText("");
+      }
+    };
+
+    document.addEventListener("selectionchange", handleSelection);
+    return () => document.removeEventListener("selectionchange", handleSelection);
   }, []);
 
   // GA4 Reading Milestone Tracking
@@ -199,7 +245,10 @@ export default function BlogPost() {
       },
       "image": post.coverImage ? [post.coverImage.startsWith('http') ? post.coverImage : `https://tghabib.com${post.coverImage}`] : [],
       "url": `https://tghabib.com/blog/${post.slug}`,
-      "keywords": post.tags?.join(", ") || ""
+      "keywords": post.tags?.join(", ") || "",
+      "wordCount": post.content ? post.content.split(/\s+/).length : 0,
+      "inLanguage": "en-US",
+      "isAccessibleForFree": "True"
     },
     {
       "@context": "https://schema.org",
@@ -260,6 +309,8 @@ export default function BlogPost() {
           <meta property="og:url" content={canonicalUrl} />
           <meta property="og:title" content={metaTitle} />
           <meta property="og:description" content={metaDescription} />
+          <meta property="og:site_name" content="TG Habib" />
+          <meta property="og:locale" content="en_US" />
           {post.coverImage && <meta property="og:image" content={post.coverImage.startsWith('http') ? post.coverImage : `https://tghabib.com${post.coverImage}`} />}
           <meta property="article:published_time" content={post.createdAt?.toDate?.().toISOString() || ''} />
           <meta property="article:author" content="https://tghabib.com" />
@@ -269,6 +320,7 @@ export default function BlogPost() {
 
           {/* Twitter */}
           <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:site" content="@tghabib" />
           <meta name="twitter:url" content={canonicalUrl} />
           <meta name="twitter:title" content={metaTitle} />
           <meta name="twitter:description" content={metaDescription} />
@@ -324,14 +376,34 @@ export default function BlogPost() {
             Back to Blog
           </Link>
 
-          <article>
+          {/* Share Snippet Popup */}
+          {selectedText && (
+            <div 
+              className="fixed z-50 -translate-x-1/2 -translate-y-full pb-2 pointer-events-auto"
+              style={{ left: selectionPosition.x, top: selectionPosition.y }}
+            >
+              <a
+                href={`https://twitter.com/intent/tweet?text="${encodeURIComponent(selectedText)}" — @tghabib&url=${shareUrl}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-brand-orange text-black px-4 py-2 rounded-full font-bold shadow-xl hover:bg-white transition-colors"
+                onMouseDown={(e) => e.preventDefault()} // Prevent losing selection
+              >
+                <Twitter size={16} /> Share Snippet
+              </a>
+            </div>
+          )}
+
+          <article ref={articleRef}>
             <header className="mb-12">
               <div className="mb-8 flex flex-wrap items-center gap-6">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 bg-white/5 pr-6 pl-2 py-2 rounded-full border border-white/10 hover:border-brand-orange/30 transition-colors">
                   <img 
                     src="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/android-chrome-512x512.png" 
                     alt="TG Habib" 
-                    className="w-12 h-12 rounded-full border border-white/10 object-cover"
+                    loading="lazy"
+                    decoding="async"
+                    className="w-12 h-12 rounded-full border-2 border-brand-orange/50 object-cover shadow-lg"
                   />
                   <div className="flex flex-col">
                     <span className="font-bold text-white text-sm">TG Habib</span>
@@ -386,7 +458,7 @@ export default function BlogPost() {
               </div>
             )}
 
-            <div className="prose prose-invert prose-lg max-w-none prose-headings:font-display prose-headings:font-bold prose-headings:tracking-tight prose-p:font-sans prose-p:text-white/80 prose-p:leading-relaxed prose-a:text-brand-orange hover:prose-a:text-brand-orange/80 prose-img:rounded-2xl prose-img:shadow-2xl prose-blockquote:border-l-brand-orange prose-blockquote:bg-brand-orange/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-xl prose-blockquote:not-italic prose-blockquote:text-white/90 prose-li:marker:text-brand-orange prose-strong:text-white">
+            <div className="prose prose-invert prose-lg md:prose-xl max-w-none prose-headings:font-display prose-headings:font-bold prose-headings:tracking-tight prose-p:font-sans prose-p:text-white/80 prose-p:leading-loose prose-a:text-brand-orange hover:prose-a:text-brand-orange/80 prose-img:rounded-2xl prose-img:shadow-2xl prose-blockquote:border-l-brand-orange prose-blockquote:bg-brand-orange/5 prose-blockquote:py-4 prose-blockquote:px-8 prose-blockquote:rounded-r-2xl prose-blockquote:not-italic prose-blockquote:text-white/90 prose-li:marker:text-brand-orange prose-strong:text-white prose-code:text-brand-orange prose-code:bg-brand-orange/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none">
               <ReactMarkdown 
                 remarkPlugins={[remarkBreaks]}
                 rehypePlugins={[rehypeSlug, rehypeSanitize]}
@@ -411,41 +483,109 @@ export default function BlogPost() {
               </ReactMarkdown>
             </div>
 
+            {/* Newsletter CTA */}
+            <div className="mt-16 bg-brand-orange/10 border border-brand-orange/20 rounded-2xl p-8 md:p-12 text-center">
+              <Mail className="w-12 h-12 text-brand-orange mx-auto mb-6" />
+              <h3 className="font-display text-3xl font-bold text-white mb-4">Level up your frontend skills.</h3>
+              <p className="text-white/70 font-sans mb-8 max-w-lg mx-auto">
+                Join my newsletter for deep dives into React, Framer Motion, Firebase, and building premium web experiences. No spam, just high-value technical insights.
+              </p>
+              <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto" onSubmit={async (e) => { 
+                e.preventDefault(); 
+                const form = e.target as HTMLFormElement;
+                const emailInput = form.elements.namedItem('email') as HTMLInputElement;
+                const email = emailInput.value;
+                const button = form.querySelector('button');
+                if (!email) return;
+                
+                if (button) {
+                  button.disabled = true;
+                  button.textContent = 'Joining...';
+                }
+                
+                try {
+                  const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+                  const { db } = await import('../firebase');
+                  await addDoc(collection(db, "subscribers"), {
+                    email,
+                    createdAt: serverTimestamp()
+                  });
+                  if (button) {
+                    button.textContent = 'Subscribed!';
+                    button.classList.add('bg-white', 'text-brand-orange');
+                  }
+                  emailInput.value = '';
+                } catch (error) {
+                  console.error("Error subscribing:", error);
+                  if (button) {
+                    button.disabled = false;
+                    button.textContent = 'Error. Try again';
+                  }
+                }
+              }}>
+                <input 
+                  type="email" 
+                  name="email"
+                  placeholder="Enter your email" 
+                  required
+                  className="flex-1 bg-black/50 border border-white/10 rounded-full px-6 py-3 text-white placeholder:text-white/40 focus:outline-none focus:border-brand-orange transition-colors"
+                />
+                <button 
+                  type="submit"
+                  className="bg-brand-orange text-black font-bold px-8 py-3 rounded-full hover:bg-white transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Subscribe
+                </button>
+              </form>
+            </div>
+
             {/* Share & Author Section */}
-            <div className="mt-16 pt-8 border-t border-white/10">
-              <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-4">
-                    <span className="font-mono text-xs uppercase tracking-widest text-white/60 flex items-center gap-2">
-                      <Share2 size={16} /> Share
-                    </span>
-                    <a href={`https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 hover:bg-brand-orange hover:text-white rounded-full transition-colors text-white/60">
+            <div className="mt-16 pt-12 border-t border-white/10 flex flex-col gap-12">
+              {/* Author Profile */}
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 bg-gradient-to-br from-white/5 to-transparent p-8 rounded-3xl border border-white/10 hover:border-brand-orange/30 transition-colors relative overflow-hidden group">
+                <div className="absolute inset-0 bg-brand-orange/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                <img 
+                  src="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/android-chrome-512x512.png" 
+                  alt="TG Habib" 
+                  loading="lazy"
+                  decoding="async"
+                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-brand-orange/50 object-cover shadow-2xl shadow-brand-orange/20 relative z-10"
+                />
+                <div className="flex-1 text-center sm:text-left relative z-10">
+                  <h3 className="font-display text-2xl sm:text-3xl font-bold text-white mb-2">TG Habib</h3>
+                  <p className="text-base sm:text-lg text-white/70 font-sans mb-4 leading-relaxed">
+                    Premium Digital Engineer & Vibecoder. I specialize in building high-performance, cinematic web applications that drive conversion and elevate brand perception.
+                  </p>
+                  <div className="flex items-center justify-center sm:justify-start gap-4">
+                    <a href="https://twitter.com/tghabib" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-mono text-brand-orange hover:text-white transition-colors uppercase tracking-widest bg-brand-orange/10 px-4 py-2 rounded-full border border-brand-orange/20 hover:bg-brand-orange hover:border-brand-orange">
+                      <Twitter size={14} /> Follow
+                    </a>
+                    <a href="https://github.com/itsGods" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-mono text-white/60 hover:text-white transition-colors uppercase tracking-widest bg-white/5 px-4 py-2 rounded-full border border-white/10 hover:bg-white/10">
+                      GitHub
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Share & Reactions */}
+              <div className="flex flex-col md:flex-row justify-between items-center gap-8 bg-white/5 p-6 rounded-2xl border border-white/5">
+                <div className="flex items-center gap-4">
+                  <span className="font-mono text-xs uppercase tracking-widest text-white/60 flex items-center gap-2">
+                    <Share2 size={16} /> Share Article
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <a href={`https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 hover:bg-[#1DA1F2] hover:text-white rounded-full transition-all text-white/60 hover:scale-110">
                       <Twitter size={18} />
                     </a>
-                    <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${shareUrl}&title=${shareTitle}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 hover:bg-brand-orange hover:text-white rounded-full transition-colors text-white/60">
+                    <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${shareUrl}&title=${shareTitle}`} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 hover:bg-[#0A66C2] hover:text-white rounded-full transition-all text-white/60 hover:scale-110">
                       <Linkedin size={18} />
                     </a>
-                    <button onClick={handleCopyLink} className="p-2 bg-white/5 hover:bg-brand-orange hover:text-white rounded-full transition-colors text-white/60">
+                    <button onClick={handleCopyLink} className="p-3 bg-white/5 hover:bg-brand-orange hover:text-white rounded-full transition-all text-white/60 hover:scale-110">
                       <LinkIcon size={18} />
                     </button>
                   </div>
-                  <PostReactions postId={post.id} initialReactions={post.reactions} />
                 </div>
-
-                <div className="flex items-center gap-5 bg-white/5 p-6 rounded-2xl border border-white/10 max-w-md hover:bg-white/10 transition-colors">
-                  <img 
-                    src="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/android-chrome-512x512.png" 
-                    alt="TG Habib" 
-                    className="w-16 h-16 rounded-full border border-white/10 object-cover shadow-lg"
-                  />
-                  <div>
-                    <h3 className="font-display text-xl font-bold text-white mb-1">TG Habib</h3>
-                    <p className="text-sm text-white/60 font-sans mb-2">Vibecoder & Full-Stack Developer building fast, modern web apps.</p>
-                    <a href="https://twitter.com/tghabib" target="_blank" rel="noopener noreferrer" className="text-xs font-mono text-brand-orange hover:text-white transition-colors uppercase tracking-widest">
-                      @tghabib
-                    </a>
-                  </div>
-                </div>
+                <PostReactions postId={post.id} initialReactions={post.reactions} />
               </div>
             </div>
 

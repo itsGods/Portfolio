@@ -12,10 +12,12 @@ const BlogList = React.lazy(() => import("./pages/BlogList"));
 const BlogPost = React.lazy(() => import("./pages/BlogPost"));
 const Admin = React.lazy(() => import("./pages/Admin"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
+const Lab = React.lazy(() => import("./pages/Lab"));
 
 function AnimatedRoutes() {
   const location = useLocation();
   const isBlogSubdomain = window.location.hostname.startsWith('blog.');
+  const isLabSubdomain = window.location.hostname.startsWith('lab.');
 
   useAnalytics();
 
@@ -28,7 +30,11 @@ function AnimatedRoutes() {
       }>
         <RouteAnnouncer />
         <Routes location={location} key={location.pathname}>
-          {isBlogSubdomain ? (
+          {isLabSubdomain ? (
+            <>
+              <Route path="/" element={<Lab />} />
+            </>
+          ) : isBlogSubdomain ? (
             <>
               <Route path="/" element={<BlogList />} />
               <Route path="/:slug" element={<BlogPost />} />
@@ -38,6 +44,7 @@ function AnimatedRoutes() {
               <Route path="/" element={<Home />} />
               <Route path="/blog" element={<BlogList />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/lab" element={<Lab />} />
             </>
           )}
           <Route path="/admin" element={<Admin />} />

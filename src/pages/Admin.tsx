@@ -305,10 +305,12 @@ export default function Admin() {
     setNewsletterStatus(null);
 
     try {
-      const response = await fetch('/.netlify/functions/send-newsletter', {
+      const token = await auth.currentUser?.getIdToken();
+      const response = await fetch('/api/send-newsletter', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ postId: post.id }),
       });

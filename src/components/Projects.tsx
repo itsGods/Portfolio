@@ -148,6 +148,7 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
               className="h-full w-full object-cover opacity-50 grayscale transition-[filter,opacity] duration-700 md:group-hover:opacity-100 md:group-hover:grayscale-0"
               referrerPolicy="no-referrer"
               loading="lazy"
+              decoding="async"
             />
           </picture>
         </div>
@@ -224,7 +225,7 @@ export default function Projects() {
   }, [selectedProject]);
 
   return (
-    <section id="projects" className="relative w-full bg-brand-black py-32 md:py-48">
+    <section id="projects" className="relative w-full bg-brand-dark py-32 md:py-48">
       {/* Background Grid */}
       <div className="absolute inset-0 z-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_20%,transparent_100%)]" />
 
@@ -238,7 +239,7 @@ export default function Projects() {
         >
           <div>
             <p className="mb-4 font-mono text-xs uppercase tracking-[0.3em] text-brand-orange">
-              Portfolio
+              PORTFOLIO // 03
             </p>
             <h2 className="font-serif text-5xl italic text-white md:text-7xl">
               Selected <span className="font-display not-italic font-bold text-brand-orange">Works</span>

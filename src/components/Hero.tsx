@@ -22,23 +22,32 @@ export default function Hero() {
   const rotateY = useAccessibleSpring(0, springConfig);
 
   useEffect(() => {
+    let animationFrameId: number;
+
     const handleMouseMove = (e: MouseEvent) => {
-      const { innerWidth, innerHeight } = window;
-      // Calculate mouse position relative to center (-0.5 to 0.5)
-      const xPct = e.clientX / innerWidth - 0.5;
-      const yPct = e.clientY / innerHeight - 0.5;
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
       
-      // Move image slightly
-      mouseX.set(xPct * 30);
-      mouseY.set(yPct * 30);
-      
-      // Tilt image
-      rotateX.set(yPct * -15); // Look up/down
-      rotateY.set(xPct * 15);  // Look left/right
+      animationFrameId = requestAnimationFrame(() => {
+        const { innerWidth, innerHeight } = window;
+        // Calculate mouse position relative to center (-0.5 to 0.5)
+        const xPct = e.clientX / innerWidth - 0.5;
+        const yPct = e.clientY / innerHeight - 0.5;
+        
+        // Move image slightly
+        mouseX.set(xPct * 30);
+        mouseY.set(yPct * 30);
+        
+        // Tilt image
+        rotateX.set(yPct * -15); // Look up/down
+        rotateY.set(xPct * 15);  // Look left/right
+      });
     };
 
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    };
   }, [mouseX, mouseY, rotateX, rotateY]);
 
   return (
@@ -51,7 +60,7 @@ export default function Hero() {
       >
         {/* SEO H1 Tag - Visually hidden but readable by search engines */}
         <h1 className="sr-only">
-          Habib — Full-Stack Developer & Vibecoder | React, Firebase, TypeScript
+          Habib — Premium Digital Engineer | High-Performance Web Applications
         </h1>
 
         {/* Layer 0: Architectural Grid */}
@@ -142,43 +151,14 @@ export default function Hero() {
                 DEVELOPER
               </span>
             </div>
-          </div>
-
-          {/* Floating Tech Data - Top Left */}
-          <div className="absolute left-8 top-32 hidden flex-col gap-2 md:flex">
-            <div className="h-[2px] w-8 bg-brand-orange" />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-white/70">SYS.INIT // 2026</span>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-white/40">LAT: 34.0522 N</span>
-          </div>
-
-          {/* Floating Tech Data - Bottom Right */}
-          <div className="absolute bottom-32 right-8 hidden flex-col items-end gap-2 md:flex">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-white/70">STATUS: ONLINE</span>
-            <div className="flex items-end gap-1 h-8">
-              {[...Array(5)].map((_, i) => (
-                <m.div 
-                  key={i} 
-                  animate={{ height: [8, Math.random() * 24 + 8, 8] }}
-                  transition={{ duration: 1.5 + Math.random(), repeat: Infinity, ease: "easeInOut" }}
-                  className="w-1 bg-brand-orange/60" 
-                />
-              ))}
+            
+            {/* Primary CTA */}
+            <div className="mt-8 pointer-events-auto">
+              <a href="#projects" className="inline-flex items-center justify-center px-8 py-4 text-sm font-mono font-bold tracking-widest uppercase bg-brand-orange text-black hover:bg-white transition-colors rounded-full shadow-[0_0_30px_rgba(255,90,0,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]">
+                View Projects
+              </a>
             </div>
           </div>
-
-          {/* Floating Glassmorphic Elements */}
-          <m.div 
-            aria-hidden="true" inert={true}
-            animate={{ y: [0, 20, 0], rotate: [0, 5, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute left-[15%] top-[20%] h-24 w-24 rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
-          />
-          <m.div 
-            aria-hidden="true" inert={true}
-            animate={{ y: [0, -30, 0], rotate: [0, -10, 0] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-[20%] right-[15%] h-32 w-32 rounded-full border border-brand-orange/20 bg-brand-orange/5 backdrop-blur-md"
-          />
         </m.div>
 
         {/* Layer 5: Vignette & Gradient */}

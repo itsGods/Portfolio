@@ -79,7 +79,7 @@ export default function Skills() {
           <div className="mb-8 flex items-center gap-4">
             <div className="h-[1px] w-8 bg-brand-orange" />
             <h2 className="font-mono text-xs uppercase tracking-[0.3em] text-brand-orange">
-              CAPABILITIES // 03
+              EXPERTISE // 05
             </h2>
           </div>
 

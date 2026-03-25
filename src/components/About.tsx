@@ -23,11 +23,11 @@ export default function About() {
   const y2 = useTransform(scrollYProgress, [0, 1], [-50, 50]);
   const rotate = useTransform(scrollYProgress, [0, 1], [-5, 5]);
 
-  const text = "I am a Vibecoder & Creative Developer, blending code with cinematic aesthetics to build immersive digital experiences.";
+  const text = "I am a Premium Digital Engineer, building high-performance, cinematic web applications that elevate brands and drive conversions.";
   const words = text.split(" ");
 
   return (
-    <section id="about" ref={containerRef} className="relative w-full bg-brand-black py-32 md:py-48 overflow-hidden">
+    <section id="about" ref={containerRef} className="relative w-full bg-brand-dark py-32 md:py-48 overflow-hidden">
       {/* Background Elements */}
       <div aria-hidden="true" inert={true} className="absolute left-0 top-1/2 -translate-y-1/2 h-[50vh] w-[50vw] rounded-full bg-brand-orange/5 blur-[120px] pointer-events-none" />
       
@@ -52,7 +52,7 @@ export default function About() {
                 transition={{ duration: 0.8, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
                 className="inline-block mr-[0.25em]"
               >
-                {word === "Vibecoder" || word === "Creative" || word === "Developer," ? (
+                {word === "Premium" || word === "Digital" || word === "Engineer," ? (
                   <span className="font-display font-bold italic text-brand-orange relative group">
                     {word}
                     <span className="absolute -bottom-2 left-0 h-[2px] w-full bg-brand-orange/30" />
@@ -86,7 +86,7 @@ export default function About() {
             className="mt-16 max-w-md font-sans text-lg text-white/60"
           >
             <p className="mb-8 leading-relaxed">
-              My work lives at the intersection of design, motion, and engineering. I don't just write code; I craft vibes. Every pixel is intentional, every animation is choreographed.
+              My work lives at the intersection of design, motion, and engineering. I don't just write code; I craft high-converting digital experiences. Every pixel is intentional, every animation is choreographed to drive business value.
             </p>
             <a href="#contact" aria-label="Contact me" className="group flex w-max items-center gap-4 font-mono text-sm uppercase tracking-widest text-white transition-colors hover:text-brand-orange">
               <span className="relative flex h-12 w-12 items-center justify-center rounded-full border border-white/20 transition-colors group-hover:border-brand-orange">
@@ -120,6 +120,7 @@ export default function About() {
                 className="absolute inset-0 h-full w-full object-cover"
                 referrerPolicy="no-referrer"
                 loading="lazy"
+                decoding="async"
               />
             </AnimatePresence>
             <div className="absolute inset-0 z-10 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent pointer-events-none" />

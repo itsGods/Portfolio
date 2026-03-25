@@ -220,10 +220,13 @@ export default function BlogList() {
           <meta property="og:url" content={canonicalUrl} />
           <meta property="og:title" content="Dev Blog | Habib — Full-Stack Developer & Vibecoder" />
           <meta property="og:description" content="Technical articles on React, Firebase, Vite, TypeScript, and solo development by Habib." />
+          <meta property="og:site_name" content="TG Habib" />
+          <meta property="og:locale" content="en_US" />
           <meta property="og:image" content="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png" />
 
           {/* Twitter */}
           <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:site" content="@tghabib" />
           <meta name="twitter:url" content={canonicalUrl} />
           <meta name="twitter:title" content="Dev Blog | Habib — Full-Stack Developer & Vibecoder" />
           <meta name="twitter:description" content="Technical articles on React, Firebase, Vite, TypeScript, and solo development by Habib." />

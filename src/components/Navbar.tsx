@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { prefetchBlogPosts } from "../utils/cache";
 
-const navItems = ["Home", "Projects", "About", "Skills", "Contact", "Blog"];
+const navItems = ["Home", "About", "Services", "Projects", "Skills", "Contact", "Blog", "Lab"];
 
 export default function Navbar() {
   const { scrollY } = useScroll();
@@ -12,13 +12,17 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const isBlogSubdomain = window.location.hostname.startsWith('blog.');
-  const isPortfolioHome = location.pathname === "/" && !isBlogSubdomain;
+  const isLabSubdomain = window.location.hostname.startsWith('lab.');
+  const isPortfolioHome = location.pathname === "/" && !isBlogSubdomain && !isLabSubdomain;
 
   const getHref = (item: string) => {
     if (item === "Blog") {
       return isBlogSubdomain ? "/" : "/blog";
     }
-    if (isBlogSubdomain) {
+    if (item === "Lab") {
+      return isLabSubdomain ? "/" : (window.location.hostname === 'localhost' ? "/lab" : "https://lab.tghabib.com");
+    }
+    if (isBlogSubdomain || isLabSubdomain) {
       return item === "Home" ? "https://tghabib.com/" : `https://tghabib.com/#${item.toLowerCase()}`;
     }
     return isPortfolioHome ? `#${item.toLowerCase()}` : `/#${item.toLowerCase()}`;
@@ -83,16 +87,17 @@ export default function Navbar() {
           >
             <ul className="flex items-center gap-8">
               {navItems.map((item, i) => {
-                const isBlog = item === "Blog";
                 const href = getHref(item);
-                const isExternal = isBlogSubdomain && !isBlog;
+                const isAnchor = href.startsWith("#");
+                const isExternal = href.startsWith("http");
+                const useLink = !isAnchor && !isExternal;
                 
                 return (
                   <li key={item} className="relative group">
-                    {isBlog ? (
+                    {useLink ? (
                       <Link
                         to={href}
-                        onMouseEnter={() => prefetchBlogPosts()}
+                        onMouseEnter={() => item === "Blog" && prefetchBlogPosts()}
                         aria-label={`Go to ${item} page`}
                         className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/70 transition-colors hover:text-white"
                       >
@@ -111,6 +116,11 @@ export default function Navbar() {
                   </li>
                 );
               })}
+              <li>
+                <a href="#contact" className="font-mono text-[10px] uppercase tracking-[0.2em] text-black bg-brand-orange px-4 py-2 rounded-full hover:bg-white transition-colors font-bold">
+                  Hire Me
+                </a>
+              </li>
             </ul>
           </motion.div>
 
@@ -160,9 +170,10 @@ export default function Navbar() {
 
             <ul className="relative z-10 flex flex-col items-center gap-8">
               {navItems.map((item, i) => {
-                const isBlog = item === "Blog";
                 const href = getHref(item);
-                const isExternal = isBlogSubdomain && !isBlog;
+                const isAnchor = href.startsWith("#");
+                const isExternal = href.startsWith("http");
+                const useLink = !isAnchor && !isExternal;
 
                 return (
                   <motion.li
@@ -177,11 +188,11 @@ export default function Navbar() {
                     }}
                     transition={{ duration: 0.6, delay: 0.1 + i * 0.05, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    {isBlog ? (
+                    {useLink ? (
                       <Link
                         to={href}
                         onClick={() => setIsOpen(false)}
-                        onMouseEnter={() => prefetchBlogPosts()}
+                        onMouseEnter={() => item === "Blog" && prefetchBlogPosts()}
                         aria-label={`Go to ${item} page`}
                         className="group relative flex items-center gap-4 font-display text-5xl font-bold tracking-tighter text-white transition-colors hover:text-brand-orange"
                       >
@@ -202,6 +213,26 @@ export default function Navbar() {
                   </motion.li>
                 );
               })}
+              <motion.li
+                initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ 
+                  opacity: 0, 
+                  y: 20, 
+                  scale: 0.9,
+                  transition: { duration: 0.4, delay: 0, ease: [0.22, 1, 0.36, 1] }
+                }}
+                transition={{ duration: 0.6, delay: 0.1 + navItems.length * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                className="mt-4"
+              >
+                <a
+                  href="#contact"
+                  onClick={() => setIsOpen(false)}
+                  className="font-mono text-sm uppercase tracking-widest text-black bg-brand-orange px-8 py-4 rounded-full hover:bg-white transition-colors font-bold"
+                >
+                  Hire Me
+                </a>
+              </motion.li>
             </ul>
 
             {/* Mobile Menu Footer */}

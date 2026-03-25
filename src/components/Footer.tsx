@@ -33,7 +33,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative w-full overflow-hidden bg-brand-black pt-32 pb-12 border-t border-white/5">
+    <footer className="relative w-full overflow-hidden bg-brand-dark pt-32 pb-12 border-t border-white/5">
       {/* Background Glow */}
       <div className="absolute bottom-0 left-1/2 h-[50vh] w-[80vw] -translate-x-1/2 translate-y-1/2 rounded-full bg-brand-orange/10 blur-[150px] pointer-events-none" />
 
