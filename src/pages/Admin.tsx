@@ -341,7 +341,9 @@ export default function Admin() {
 
     setIsGeneratingSEO(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+      if (!apiKey) throw new Error("Gemini API key is missing.");
+      const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: "gemini-3.1-pro-preview",
         contents: `You are an elite SEO expert and copywriter. Analyze the following blog post content and generate the ultimate SEO-optimized metadata to rank #1 on Google. The target domain is blog.TGhabib.com.
@@ -398,7 +400,9 @@ export default function Admin() {
 
     setIsGeneratingImage(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+      if (!apiKey) throw new Error("Gemini API key is missing.");
+      const ai = new GoogleGenAI({ apiKey });
       
       const promptResponse = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
@@ -455,7 +459,9 @@ export default function Admin() {
     setErrorMessage(null);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+      if (!apiKey) throw new Error("Gemini API key is missing.");
+      const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: "gemini-3.1-pro-preview",
         contents: `You are an expert markdown editor and formatter. Take the following markdown content and fix its formatting, alignment, and structure. Ensure it uses clean, standard Markdown. Fix any broken paragraphs, lists, or headings. Do not change the core meaning or tone of the text, just make it perfectly formatted, aligned, and readable. Return ONLY the formatted markdown text, without any conversational filler or markdown code block backticks around the whole response if possible.
@@ -774,7 +780,8 @@ ${editorContent}`,
             </div>
 
             <div className="bg-brand-dark rounded-2xl border border-white/10 overflow-hidden">
-              <table className="w-full text-left border-collapse">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[800px] text-left border-collapse">
                 <thead>
                   <tr className="border-b border-white/10 bg-black/20">
                     <th className="p-4 w-12">
@@ -846,11 +853,13 @@ ${editorContent}`,
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
           </>
         ) : (
           <div className="bg-brand-dark rounded-2xl border border-white/10 overflow-hidden">
-            <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[600px] text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/10 bg-black/20">
                   <th className="p-4 font-mono text-xs uppercase tracking-widest text-white/40">Email</th>
@@ -875,6 +884,7 @@ ${editorContent}`,
                 )}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>

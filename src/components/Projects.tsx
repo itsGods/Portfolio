@@ -1,92 +1,10 @@
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "motion/react";
 import React, { useState, useEffect } from "react";
-
+import { Link, useNavigate } from "react-router-dom";
 import { useStructuredData } from "../hooks/useStructuredData";
+import { projects, Project } from "../data/projects";
 
-const projects = [
-  {
-    id: 1,
-    title: "Solo Dev",
-    category: "Full Stack Blog",
-    year: "2026",
-    role: "Vibecoder",
-    image: "https://res.cloudinary.com/djo33javr/image/upload/v1773247850/Google_play_store_feature_graphic_1024x500_for_a_d_delpmaspu_3_t8i8em.jpg",
-    landscapeImage: "https://res.cloudinary.com/djo33javr/image/upload/v1773247850/Google_play_store_feature_graphic_1024x500_for_a_d_delpmaspu_2_hri9am.jpg",
-    description: "A full-stack personal blog site made with Vibe coding. It features a complete backend powered by Supabase for managing posts and content.",
-    techStack: "React, Supabase, Tailwind",
-    link: "https://habibul.online"
-  },
-  {
-    id: 2,
-    title: "Bio Link",
-    category: "Linktree Clone",
-    year: "2026",
-    role: "Vibecoder",
-    image: "https://res.cloudinary.com/djo33javr/image/upload/v1773247852/Create_a_google_play_store_feature_graphic_1024x50_delpmaspu_ttvbcd.jpg",
-    landscapeImage: "https://res.cloudinary.com/djo33javr/image/upload/v1773247850/Create_a_google_play_store_feature_graphic_1024x50_delpmaspu_1_sg99pr.jpg",
-    description: "A completely free and easy-to-use full-stack Linktree clone. Built entirely with Vibe coding, allowing users to create and manage their personalized bio links seamlessly.",
-    techStack: "React, Node.js, Tailwind",
-    link: "https://biolink.us.cc"
-  },
-  {
-    id: 3,
-    title: "Atpukur Boys",
-    category: "Messaging App",
-    year: "2026",
-    role: "Full Stack",
-    image: "https://raw.githubusercontent.com/itsGods/Blog-asset/refs/heads/main/file_0000000040ac720b9327bdd5ddd9ae92.png",
-    landscapeImage: "https://res.cloudinary.com/djo33javr/image/upload/v1773247849/Create_an_image_play_store_feature_graphic_1024x50_delpmaspu_uogfy8.jpg",
-    description: "A full-stack messaging app with powerful admin controls. It features end-to-end encryption and group messaging, built exclusively for the Atpukur gang.",
-    techStack: "React, Node.js, WebSockets",
-    link: "https://atpukurboys.qzz.io/"
-  },
-  {
-    id: 4,
-    title: "Neon Genesis",
-    category: "WebGL Experience",
-    year: "2026",
-    role: "Creative Developer",
-    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop",
-    description: "An immersive 3D journey through a cyberpunk cityscape built with Three.js and React Three Fiber. This project explores the intersection of real-time rendering and cinematic lighting.",
-    techStack: "React, Three.js, GSAP",
-    link: "#"
-  },
-  {
-    id: 5,
-    title: "Aura Flow",
-    category: "Creative Coding",
-    year: "2025",
-    role: "Vibecoder",
-    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000&auto=format&fit=crop",
-    description: "Generative art platform exploring fluid dynamics and particle systems in real-time. Users can interact with the simulation using their webcam and hand gestures.",
-    techStack: "WebGL, GLSL, React",
-    link: "#"
-  },
-  {
-    id: 6,
-    title: "Vibe Check",
-    category: "Interactive App",
-    year: "2025",
-    role: "Full Stack",
-    image: "https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=1000&auto=format&fit=crop",
-    description: "A social platform for sharing moods through abstract visual representations and soundscapes. Built with Next.js, Framer Motion, and Web Audio API.",
-    techStack: "Next.js, Framer Motion, Web Audio",
-    link: "#"
-  },
-  {
-    id: 7,
-    title: "Dark Matter",
-    category: "E-Commerce",
-    year: "2024",
-    role: "Frontend Lead",
-    image: "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=1000&auto=format&fit=crop",
-    description: "High-end streetwear brand website featuring cinematic scroll animations and 3D product viewers. Awarded Site of the Day on Awwwards.",
-    techStack: "React, Three.js, Tailwind",
-    link: "#"
-  },
-];
-
-function ProjectCard({ project, onClick }: { project: any; onClick: () => void }) {
+function ProjectCard({ project, onClick }: { project: Project; onClick: () => void }) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -187,7 +105,7 @@ function ProjectCard({ project, onClick }: { project: any; onClick: () => void }
 }
 
 export default function Projects() {
-  const [selectedProject, setSelectedProject] = useState<any | null>(null);
+  const navigate = useNavigate();
 
   useStructuredData({
     "@context": "https://schema.org",
@@ -204,25 +122,6 @@ export default function Projects() {
       }
     }))
   });
-
-  // Prevent scrolling when modal is open
-  useEffect(() => {
-    if (selectedProject) {
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-      document.body.style.overflow = "hidden";
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-      window.dispatchEvent(new Event('stop-lenis'));
-    } else {
-      document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
-      window.dispatchEvent(new Event('start-lenis'));
-    }
-    return () => {
-      document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
-      window.dispatchEvent(new Event('start-lenis'));
-    };
-  }, [selectedProject]);
 
   return (
     <section id="projects" className="relative w-full bg-brand-dark py-32 md:py-48">
@@ -260,121 +159,11 @@ export default function Projects() {
               transition={{ duration: 1, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
               className={i % 2 !== 0 ? "md:mt-32" : ""}
             >
-              <ProjectCard project={project} onClick={() => setSelectedProject(project)} />
+              <ProjectCard project={project} onClick={() => navigate(`/project/${project.slug}`)} />
             </motion.div>
           ))}
         </div>
       </div>
-
-      {/* Fullscreen Modal */}
-      <AnimatePresence>
-        {selectedProject && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-brand-black/95 p-4 md:p-12"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.9, y: 20, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl bg-brand-dark border border-white/10 shadow-2xl"
-            >
-              {/* Close Button */}
-              <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ delay: 0.1 }}
-                onClick={() => setSelectedProject(null)}
-                aria-label="Close project details"
-                className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md transition-all hover:bg-brand-orange hover:rotate-90 md:right-6 md:top-6 md:h-12 md:w-12 [-webkit-tap-highlight-color:transparent]"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </motion.button>
-
-              {/* Image Section */}
-              <div className="relative aspect-[2/1] w-full shrink-0 overflow-hidden bg-black">
-                <picture className="block h-full w-full">
-                  <img
-                    src={selectedProject.image}
-                    alt={`${selectedProject.title} - ${selectedProject.category} Project Details`}
-                    width="1200"
-                    height="600"
-                    className="h-full w-full object-cover"
-                    referrerPolicy="no-referrer"
-                    loading="eager"
-                  />
-                </picture>
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent pointer-events-none" />
-              </div>
-
-              {/* Content Section */}
-              <div className="flex w-full flex-col overflow-y-auto p-6 md:p-12">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
-                >
-                  <div className="mb-4 flex items-center gap-4 md:mb-6">
-                    <p className="font-mono text-xs uppercase tracking-widest text-brand-orange">
-                      {selectedProject.category}
-                    </p>
-                    <span className="h-1 w-1 rounded-full bg-white/30" />
-                    <p className="font-mono text-xs text-white/50">{selectedProject.year}</p>
-                  </div>
-                  
-                  <h3 className="mb-6 font-display text-3xl font-bold text-white md:mb-8 md:text-6xl">
-                    {selectedProject.title}
-                  </h3>
-                  
-                  <div className="mb-6 h-[1px] w-full bg-white/10 md:mb-8" />
-                  
-                  <div className="mb-6 grid grid-cols-2 gap-4 md:mb-8 md:gap-8">
-                    <div>
-                      <p className="mb-1 font-mono text-[10px] uppercase tracking-widest text-white/40 md:mb-2">Role</p>
-                      <p className="font-sans text-sm text-white">{selectedProject.role}</p>
-                    </div>
-                    <div>
-                      <p className="mb-1 font-mono text-[10px] uppercase tracking-widest text-white/40 md:mb-2">Tech Stack</p>
-                      <p className="font-sans text-sm text-white">{selectedProject.techStack || "React, Three.js, GSAP"}</p>
-                    </div>
-                  </div>
-
-                  <p className="mb-8 font-sans text-base leading-relaxed text-white/70 md:mb-12 md:text-lg">
-                    {selectedProject.description}
-                    <br className="hidden md:block" /><br className="hidden md:block" />
-                    <span className="hidden md:inline">This project showcases advanced techniques in creative coding, focusing on performance, aesthetics, and user interaction to deliver a memorable digital experience.</span>
-                  </p>
-                  
-                  <a 
-                    href={selectedProject.link || "#"} 
-                    onClick={(e) => {
-                      if (!selectedProject.link || selectedProject.link === "#") {
-                        e.preventDefault();
-                      }
-                    }}
-                    aria-label={`View live site for ${selectedProject.title}`} 
-                    target={selectedProject.link && selectedProject.link !== "#" ? "_blank" : "_self"} 
-                    rel="noopener noreferrer" 
-                    className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full border border-white/20 bg-transparent px-8 py-4 font-mono text-sm uppercase tracking-widest text-white transition-all hover:border-brand-orange md:w-max [-webkit-tap-highlight-color:transparent]"
-                  >
-                    <span className="relative z-10 transition-colors group-hover:text-black">View Live Site</span>
-                    <div className="absolute inset-0 -z-0 h-full w-full translate-y-full bg-brand-orange transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:translate-y-0" />
-                  </a>
-                </motion.div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }

@@ -13,6 +13,7 @@ const BlogPost = React.lazy(() => import("./pages/BlogPost"));
 const Admin = React.lazy(() => import("./pages/Admin"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 const Lab = React.lazy(() => import("./pages/Lab"));
+const ProjectDetails = React.lazy(() => import("./pages/ProjectDetails"));
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -45,6 +46,7 @@ function AnimatedRoutes() {
               <Route path="/blog" element={<BlogList />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/lab" element={<Lab />} />
+              <Route path="/project/:slug" element={<ProjectDetails />} />
             </>
           )}
           <Route path="/admin" element={<Admin />} />

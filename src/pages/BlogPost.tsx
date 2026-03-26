@@ -12,7 +12,7 @@ import CustomCursor from "../components/CustomCursor";
 import Grain from "../components/Grain";
 import PageTransition from "../components/PageTransition";
 import TableOfContents from "../components/TableOfContents";
-import { ArrowLeft, Clock, Tag, Share2, Twitter, Linkedin, Link as LinkIcon, Copy, Check, ArrowUp, Mail } from "lucide-react";
+import { ArrowLeft, Clock, Tag, Share2, Twitter, Linkedin, Link as LinkIcon, Copy, Check, ArrowUp, Mail, BadgeCheck } from "lucide-react";
 import { useStructuredData } from "../hooks/useStructuredData";
 import { useReadingProgress } from "../hooks/useReadingProgress";
 import { stripAndTruncate } from "../lib/utils";
@@ -397,24 +397,30 @@ export default function BlogPost() {
           <article ref={articleRef}>
             <header className="mb-12">
               <div className="mb-8 flex flex-wrap items-center gap-6">
-                <div className="flex items-center gap-4 bg-white/5 pr-6 pl-2 py-2 rounded-full border border-white/10 hover:border-brand-orange/30 transition-colors">
-                  <img 
-                    src="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/android-chrome-512x512.png" 
-                    alt="TG Habib" 
-                    loading="lazy"
-                    decoding="async"
-                    className="w-12 h-12 rounded-full border-2 border-brand-orange/50 object-cover shadow-lg"
-                  />
-                  <div className="flex flex-col">
-                    <span className="font-bold text-white text-sm">TG Habib</span>
-                    <div className="flex items-center gap-3 text-brand-orange font-mono text-[10px] sm:text-xs uppercase tracking-[0.2em] mt-1">
+                <div className="flex items-center gap-4 bg-black/40 backdrop-blur-md pr-6 pl-2 py-2 rounded-full border border-white/10 hover:border-brand-orange/50 hover:bg-white/5 transition-all duration-300 group">
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full bg-brand-orange/20 blur-md group-hover:bg-brand-orange/40 transition-colors duration-300" />
+                    <img 
+                      src="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/android-chrome-512x512.png" 
+                      alt="TG Habib" 
+                      loading="lazy"
+                      decoding="async"
+                      className="relative w-12 h-12 rounded-full border border-white/20 object-cover shadow-xl"
+                    />
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-display font-bold text-white text-sm tracking-wide">TG Habib</span>
+                      <BadgeCheck size={14} className="text-brand-orange" />
+                    </div>
+                    <div className="flex items-center gap-3 text-white/50 font-mono text-[10px] sm:text-xs uppercase tracking-[0.15em] mt-0.5">
                       <time dateTime={post.createdAt?.toDate()?.toISOString()}>
-                        {post.createdAt?.toDate() ? post.createdAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown date'}
+                        {post.createdAt?.toDate() ? post.createdAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Unknown date'}
                       </time>
                       {post.readingTime && (
                         <>
                           <span className="text-white/20">•</span>
-                          <span className="flex items-center gap-1">
+                          <span className="flex items-center gap-1 text-brand-orange/80">
                             <Clock size={12} />
                             <span>{post.readingTime} min read</span>
                           </span>
@@ -542,27 +548,59 @@ export default function BlogPost() {
             {/* Share & Author Section */}
             <div className="mt-16 pt-12 border-t border-white/10 flex flex-col gap-12">
               {/* Author Profile */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 bg-gradient-to-br from-white/5 to-transparent p-8 rounded-3xl border border-white/10 hover:border-brand-orange/30 transition-colors relative overflow-hidden group">
-                <div className="absolute inset-0 bg-brand-orange/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                <img 
-                  src="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/android-chrome-512x512.png" 
-                  alt="TG Habib" 
-                  loading="lazy"
-                  decoding="async"
-                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-brand-orange/50 object-cover shadow-2xl shadow-brand-orange/20 relative z-10"
-                />
-                <div className="flex-1 text-center sm:text-left relative z-10">
-                  <h3 className="font-display text-2xl sm:text-3xl font-bold text-white mb-2">TG Habib</h3>
-                  <p className="text-base sm:text-lg text-white/70 font-sans mb-4 leading-relaxed">
-                    Premium Digital Engineer & Vibecoder. I specialize in building high-performance, cinematic web applications that drive conversion and elevate brand perception.
-                  </p>
-                  <div className="flex items-center justify-center sm:justify-start gap-4">
-                    <a href="https://twitter.com/tghabib" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-mono text-brand-orange hover:text-white transition-colors uppercase tracking-widest bg-brand-orange/10 px-4 py-2 rounded-full border border-brand-orange/20 hover:bg-brand-orange hover:border-brand-orange">
-                      <Twitter size={14} /> Follow
-                    </a>
-                    <a href="https://github.com/itsGods" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-mono text-white/60 hover:text-white transition-colors uppercase tracking-widest bg-white/5 px-4 py-2 rounded-full border border-white/10 hover:bg-white/10">
-                      GitHub
-                    </a>
+              <div className="relative overflow-hidden rounded-3xl bg-black/40 backdrop-blur-xl border border-white/10 p-8 sm:p-10 group hover:border-brand-orange/30 transition-all duration-500">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:bg-brand-orange/20 transition-colors duration-700 pointer-events-none" />
+                
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 relative z-10">
+                  <div className="relative shrink-0">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-brand-orange to-transparent opacity-20 blur-lg group-hover:opacity-40 transition-opacity duration-500" />
+                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full p-1 bg-gradient-to-br from-white/20 to-white/5 relative z-10">
+                      <img 
+                        src="https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/android-chrome-512x512.png" 
+                        alt="TG Habib" 
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full rounded-full object-cover border-4 border-black"
+                      />
+                    </div>
+                    <div className="absolute -bottom-2 -right-2 bg-brand-orange text-black p-2 rounded-full border-4 border-black z-20 shadow-xl">
+                      <BadgeCheck size={20} className="fill-black text-brand-orange" />
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 text-center sm:text-left">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono uppercase tracking-[0.2em] text-white/60 mb-4">
+                      <span>Written By</span>
+                    </div>
+                    <h3 className="font-display text-3xl sm:text-4xl font-bold text-white mb-2 tracking-tight">
+                      TG Habib
+                    </h3>
+                    <p className="text-brand-orange font-mono text-xs uppercase tracking-widest mb-4">
+                      Premium Digital Engineer
+                    </p>
+                    <p className="text-base sm:text-lg text-white/60 font-sans mb-8 leading-relaxed max-w-2xl">
+                      I specialize in building high-performance, cinematic web applications that drive conversion and elevate brand perception. Turning complex problems into elegant digital experiences.
+                    </p>
+                    
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4">
+                      <a 
+                        href="https://twitter.com/tghabib" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="group/btn inline-flex items-center gap-2 text-sm font-bold text-black bg-brand-orange px-6 py-3 rounded-full hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(242,125,38,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]"
+                      >
+                        <Twitter size={16} className="group-hover/btn:-rotate-12 transition-transform" /> 
+                        Follow on X
+                      </a>
+                      <a 
+                        href="https://github.com/itsGods" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="inline-flex items-center gap-2 text-sm font-bold text-white bg-white/5 px-6 py-3 rounded-full border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+                      >
+                        GitHub Profile
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>

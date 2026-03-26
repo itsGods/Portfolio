@@ -1,5 +1,6 @@
 import { LazyMotion, domAnimation, m, useScroll, useTransform } from "motion/react";
 import { useEffect, useRef } from "react";
+import { ArrowRight } from "lucide-react";
 import { useAccessibleSpring } from "../hooks/useAccessibleSpring";
 
 export default function Hero() {
@@ -153,10 +154,70 @@ export default function Hero() {
             </div>
             
             {/* Primary CTA */}
-            <div className="mt-8 pointer-events-auto">
-              <a href="#projects" className="inline-flex items-center justify-center px-8 py-4 text-sm font-mono font-bold tracking-widest uppercase bg-brand-orange text-black hover:bg-white transition-colors rounded-full shadow-[0_0_30px_rgba(255,90,0,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]">
-                View Projects
-              </a>
+            <div className="mt-12 pointer-events-auto flex justify-center">
+              <m.a 
+                href="#projects"
+                whileHover="hover"
+                initial="initial"
+                className="group relative inline-flex items-center justify-center gap-6 px-10 py-5 bg-black/40 backdrop-blur-xl border border-white/10 rounded-full overflow-hidden transition-all duration-500 hover:border-brand-orange/50 hover:bg-black/60"
+              >
+                {/* Animated Background Glow */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
+                  <div className="absolute inset-0 bg-gradient-to-r from-brand-orange/0 via-brand-orange/20 to-brand-orange/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-brand-orange/20 rounded-full blur-2xl" />
+                </div>
+
+                {/* Text Container */}
+                <div className="relative z-10 flex flex-col h-[1.2em] overflow-hidden font-mono text-sm font-bold tracking-[0.2em] uppercase text-white">
+                  <m.span 
+                    variants={{
+                      initial: { y: 0 },
+                      hover: { y: "-100%" }
+                    }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex items-center"
+                  >
+                    View Projects
+                  </m.span>
+                  <m.span 
+                    variants={{
+                      initial: { y: "100%" },
+                      hover: { y: "-100%" }
+                    }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute inset-0 flex items-center text-brand-orange"
+                  >
+                    View Projects
+                  </m.span>
+                </div>
+
+                {/* Arrow Icon */}
+                <div className="relative z-10 flex items-center justify-center w-10 h-10 rounded-full bg-white/10 group-hover:bg-brand-orange text-white group-hover:text-black transition-colors duration-500 overflow-hidden">
+                  <m.div
+                    variants={{
+                      initial: { x: 0 },
+                      hover: { x: 40 }
+                    }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute flex items-center justify-center"
+                  >
+                    <ArrowRight size={16} />
+                  </m.div>
+                  <m.div
+                    variants={{
+                      initial: { x: -40 },
+                      hover: { x: 0 }
+                    }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute flex items-center justify-center"
+                  >
+                    <ArrowRight size={16} />
+                  </m.div>
+                </div>
+
+                {/* Outer Glow on Hover */}
+                <div className="absolute inset-0 rounded-full shadow-[0_0_0_rgba(242,125,38,0)] group-hover:shadow-[0_0_40px_rgba(242,125,38,0.4)] transition-shadow duration-700 pointer-events-none" />
+              </m.a>
             </div>
           </div>
         </m.div>
