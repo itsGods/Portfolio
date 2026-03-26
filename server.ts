@@ -2,6 +2,7 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import fs from "fs";
 import path from "path";
+import { localBlogPosts } from "./src/data/blogPosts";
 
 async function startServer() {
   const app = express();
@@ -79,6 +80,21 @@ Sitemap: https://tghabib.com/sitemap.xml`);
       });
 
       let dynamicUrls = "";
+      
+      // Add local posts
+      localBlogPosts.forEach(post => {
+        if (post.published) {
+          const updatedAt = post.createdAt.toDate().toISOString();
+          dynamicUrls += `
+  <url>
+    <loc>https://tghabib.com/blog/${post.slug}</loc>
+    <lastmod>${updatedAt}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+        }
+      });
+
       if (response.ok) {
         const data = await response.json();
         if (data && data.length > 0) {
@@ -155,6 +171,21 @@ Sitemap: https://tghabib.com/sitemap.xml`);
       });
 
       let rssItems = "";
+      
+      // Add local posts
+      localBlogPosts.forEach(post => {
+        if (post.published) {
+          rssItems += `
+    <item>
+      <title><![CDATA[${post.title}]]></title>
+      <link>https://tghabib.com/blog/${post.slug}</link>
+      <guid>https://tghabib.com/blog/${post.slug}</guid>
+      <pubDate>${post.createdAt.toDate().toUTCString()}</pubDate>
+      <description><![CDATA[${post.excerpt}]]></description>
+    </item>`;
+        }
+      });
+
       if (response.ok) {
         const data = await response.json();
         if (data && data.length > 0) {
@@ -285,124 +316,196 @@ Sitemap: https://tghabib.com/sitemap.xml`);
     }
   });
 
-  // Intercept requests to /blog/:slug to inject SEO meta tags
-  app.get("/blog/:slug", async (req, res, next) => {
-    const slug = req.params.slug;
-    
+  // Intercept requests to inject SEO meta tags for ALL routes
+  app.get("*", async (req, res, next) => {
+    // Skip API routes and static assets
+    if (req.path.startsWith("/api/") || req.path.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/)) {
+      return next();
+    }
+
     try {
-      // Fetch post from Firestore REST API
-      const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents:runQuery`;
-      
-      const queryPayload = {
-        structuredQuery: {
-          from: [{ collectionId: "posts" }],
-          where: {
-            fieldFilter: {
-              field: { fieldPath: "slug" },
-              op: "EQUAL",
-              value: { stringValue: slug }
-            }
-          },
-          limit: 1
-        }
-      };
+      let title = "TG Habib | Vibecoder & Creative Developer";
+      let description = "I am a Vibecoder & Creative Developer, blending code with cinematic aesthetics to build immersive digital experiences.";
+      let coverImage = "https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png";
+      let canonicalUrl = `https://tghabib.com${req.path === '/' ? '' : req.path}`;
+      let type = "website";
+      let jsonLd: any = null;
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(queryPayload)
-      });
+      // 1. Handle Blog Post Route
+      if (req.path.startsWith("/blog/") && req.path !== "/blog") {
+        const slug = req.path.split("/")[2];
+        const localPost = localBlogPosts.find(p => p.slug === slug);
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.length > 0 && data[0].document) {
-          const doc = data[0].document.fields;
+        if (localPost) {
+          title = localPost.seoTitle || localPost.title || "Blog Post | TG Habib";
+          description = localPost.seoDescription || localPost.excerpt || "Read this amazing blog post by TG Habib.";
+          coverImage = localPost.coverImage || coverImage;
+          type = "article";
           
-          // Only show published posts unless preview token is provided
-          const isPublished = doc.published?.booleanValue === true;
-          const previewToken = req.query.preview;
-          const docPreviewToken = doc.previewToken?.stringValue;
+          const createdAt = localPost.createdAt?.toDate().toISOString() || new Date().toISOString();
           
-          if (isPublished || (previewToken && previewToken === docPreviewToken)) {
-            const title = doc.seoTitle?.stringValue || doc.title?.stringValue || "Blog Post | TG Habib";
-            const description = doc.seoDescription?.stringValue || doc.excerpt?.stringValue || "Read this amazing blog post by TG Habib.";
-            const coverImage = doc.coverImage?.stringValue || "";
-            const createdAt = doc.createdAt?.timestampValue || new Date().toISOString();
-            const updatedAt = doc.updatedAt?.timestampValue || createdAt;
-            const canonicalUrl = `https://tghabib.com/blog/${slug}`;
-            
-            // Read index.html
-            let template = "";
-            if (process.env.NODE_ENV !== "production") {
-              template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
-            } else {
-              template = fs.readFileSync(path.resolve(process.cwd(), 'dist/index.html'), 'utf-8');
-            }
-
-            // Generate JSON-LD Structured Data
-            const jsonLd = {
-              "@context": "https://schema.org",
-              "@type": "BlogPosting",
-              "mainEntityOfPage": {
-                "@type": "WebPage",
-                "@id": canonicalUrl
+          jsonLd = {
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            "mainEntityOfPage": { "@type": "WebPage", "@id": canonicalUrl },
+            "headline": title,
+            "description": description,
+            "image": [coverImage],
+            "author": { "@type": "Person", "name": "TG Habib", "url": "https://tghabib.com/" },
+            "publisher": {
+              "@type": "Organization",
+              "name": "TG Habib",
+              "logo": { "@type": "ImageObject", "url": "https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png" }
+            },
+            "datePublished": createdAt,
+            "dateModified": createdAt
+          };
+        } else {
+          const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${databaseId}/documents:runQuery`;
+          const queryPayload = {
+            structuredQuery: {
+              from: [{ collectionId: "posts" }],
+              where: {
+                fieldFilter: { field: { fieldPath: "slug" }, op: "EQUAL", value: { stringValue: slug } }
               },
-              "headline": title,
-              "description": description,
-              "image": coverImage ? [coverImage] : [],
-              "author": {
-                "@type": "Person",
-                "name": "TG Habib",
-                "url": "https://tghabib.com/"
-              },
-              "publisher": {
-                "@type": "Organization",
-                "name": "TG Habib",
-                "logo": {
-                  "@type": "ImageObject",
-                  "url": "https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png"
-                }
-              },
-              "datePublished": createdAt,
-              "dateModified": updatedAt
-            };
-
-            // Inject meta tags by replacing existing ones
-            let html = template
-              .replace(/<title>.*?<\/title>/i, `<title>${title}</title>`)
-              .replace(/<link rel="canonical" href=".*?"\s*\/?>/i, '') // Remove existing canonical if any
-              .replace(/<meta name="title" content=".*?"\s*\/?>/i, `<meta name="title" content="${title}" />\n    <link rel="canonical" href="${canonicalUrl}" />`)
-              .replace(/<meta name="description" content=".*?"\s*\/?>/i, `<meta name="description" content="${description}" />`)
-              .replace(/<meta property="og:title" content=".*?"\s*\/?>/i, `<meta property="og:title" content="${title}" />`)
-              .replace(/<meta property="og:description" content=".*?"\s*\/?>/i, `<meta property="og:description" content="${description}" />`)
-              .replace(/<meta property="og:type" content=".*?"\s*\/?>/i, `<meta property="og:type" content="article" />\n    <meta property="article:published_time" content="${createdAt}" />\n    <meta property="article:modified_time" content="${updatedAt}" />\n    <meta property="article:author" content="TG Habib" />`)
-              .replace(/<meta property="og:url" content=".*?"\s*\/?>/i, `<meta property="og:url" content="${canonicalUrl}" />`)
-              .replace(/<meta name="twitter:card" content=".*?"\s*\/?>/i, '') // Remove if exists
-              .replace(/<meta property="twitter:title" content=".*?"\s*\/?>/i, `<meta name="twitter:card" content="summary_large_image" />\n    <meta property="twitter:title" content="${title}" />`)
-              .replace(/<meta property="twitter:description" content=".*?"\s*\/?>/i, `<meta property="twitter:description" content="${description}" />`)
-              .replace(/<meta property="twitter:url" content=".*?"\s*\/?>/i, `<meta property="twitter:url" content="${canonicalUrl}" />`);
-
-            if (coverImage) {
-              html = html
-                .replace(/<meta property="og:image" content=".*?"\s*\/?>/i, `<meta property="og:image" content="${coverImage}" />`)
-                .replace(/<meta property="twitter:image" content=".*?"\s*\/?>/i, `<meta property="twitter:image" content="${coverImage}" />`);
+              limit: 1
             }
+          };
 
-            // Inject JSON-LD
-            html = html.replace('</head>', `  <script type="application/ld+json">\n${JSON.stringify(jsonLd, null, 2)}\n</script>\n</head>`);
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(queryPayload)
+          });
 
-            // If in development, let Vite transform the HTML
-            if (process.env.NODE_ENV !== "production") {
-              html = await vite.transformIndexHtml(req.originalUrl, html);
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.length > 0 && data[0].document) {
+              const doc = data[0].document.fields;
+              const isPublished = doc.published?.booleanValue === true;
+              const previewToken = req.query.preview;
+              const docPreviewToken = doc.previewToken?.stringValue;
+              
+              if (isPublished || (previewToken && previewToken === docPreviewToken)) {
+                title = doc.seoTitle?.stringValue || doc.title?.stringValue || "Blog Post | TG Habib";
+                description = doc.seoDescription?.stringValue || doc.excerpt?.stringValue || "Read this amazing blog post by TG Habib.";
+                coverImage = doc.coverImage?.stringValue || coverImage;
+                type = "article";
+                
+                const createdAt = doc.createdAt?.timestampValue || new Date().toISOString();
+                const updatedAt = doc.updatedAt?.timestampValue || createdAt;
+                
+                jsonLd = {
+                  "@context": "https://schema.org",
+                  "@type": "BlogPosting",
+                  "mainEntityOfPage": { "@type": "WebPage", "@id": canonicalUrl },
+                  "headline": title,
+                  "description": description,
+                  "image": [coverImage],
+                  "author": { "@type": "Person", "name": "TG Habib", "url": "https://tghabib.com/" },
+                  "publisher": {
+                    "@type": "Organization",
+                    "name": "TG Habib",
+                    "logo": { "@type": "ImageObject", "url": "https://raw.githubusercontent.com/itsGods/Personal/refs/heads/main/file_0000000038e47208a7c7e84e80a5026d.png" }
+                  },
+                  "datePublished": createdAt,
+                  "dateModified": updatedAt
+                };
+              }
             }
-            
-            res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
-            return;
           }
         }
+      } 
+      // 2. Handle Project Case Study Route
+      else if (req.path.startsWith("/project/")) {
+        const slug = req.path.split("/")[2];
+        // Hardcoded project data for SEO injection (matches src/data/projects.ts)
+        const projectsData: Record<string, any> = {
+          "solo-dev": {
+            title: "Solo Dev - React & Supabase Case Study",
+            description: "A full-stack personal blog site made with Vibe coding. It features a complete backend powered by Supabase for managing posts and content.",
+            image: "https://res.cloudinary.com/djo33javr/image/upload/v1773247850/Google_play_store_feature_graphic_1024x500_for_a_d_delpmaspu_3_t8i8em.jpg"
+          },
+          "bio-link": {
+            title: "Bio Link - Open Source Linktree Clone Case Study",
+            description: "A completely free and easy-to-use full-stack Linktree clone. Built entirely with Vibe coding, allowing users to create and manage their personalized bio links.",
+            image: "https://res.cloudinary.com/djo33javr/image/upload/v1773247852/Create_a_google_play_store_feature_graphic_1024x50_delpmaspu_ttvbcd.jpg"
+          },
+          "atpukur-boys": {
+            title: "Atpukur Boys - Secure Messaging App Case Study",
+            description: "A full-stack messaging app with powerful admin controls. It features end-to-end encryption and group messaging, built exclusively for the Atpukur gang.",
+            image: "https://raw.githubusercontent.com/itsGods/Blog-asset/refs/heads/main/file_0000000040ac720b9327bdd5ddd9ae92.png"
+          }
+        };
+
+        if (projectsData[slug]) {
+          title = projectsData[slug].title;
+          description = projectsData[slug].description;
+          coverImage = projectsData[slug].image;
+          type = "article";
+
+          jsonLd = {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "mainEntityOfPage": { "@type": "WebPage", "@id": canonicalUrl },
+            "headline": title,
+            "description": description,
+            "image": [coverImage],
+            "author": { "@type": "Person", "name": "TG Habib" }
+          };
+        }
       }
+      // 3. Handle Blog List Route
+      else if (req.path === "/blog") {
+        title = "Blog | TG Habib - Engineering & Vibe Coding";
+        description = "Read my latest articles on full-stack engineering, React, Next.js, and the art of vibe coding.";
+      }
+      // 4. Handle Lab Route
+      else if (req.path === "/lab") {
+        title = "Lab | TG Habib - Creative Experiments";
+        description = "A collection of my creative coding experiments, WebGL sketches, and UI/UX interactions.";
+      }
+
+      // Read index.html
+      let template = "";
+      if (process.env.NODE_ENV !== "production") {
+        template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
+      } else {
+        template = fs.readFileSync(path.resolve(process.cwd(), 'dist/index.html'), 'utf-8');
+      }
+
+      // Inject meta tags by replacing existing ones
+      let html = template
+        .replace(/<title data-rh="true">.*?<\/title>/i, `<title data-rh="true">${title}</title>`)
+        .replace(/<link data-rh="true" rel="canonical" href=".*?"\s*\/?>/i, `<link data-rh="true" rel="canonical" href="${canonicalUrl}" />`)
+        .replace(/<meta data-rh="true" name="title" content=".*?"\s*\/?>/i, `<meta data-rh="true" name="title" content="${title}" />`)
+        .replace(/<meta data-rh="true" name="description" content=".*?"\s*\/?>/i, `<meta data-rh="true" name="description" content="${description}" />`)
+        .replace(/<meta data-rh="true" property="og:title" content=".*?"\s*\/?>/i, `<meta data-rh="true" property="og:title" content="${title}" />`)
+        .replace(/<meta data-rh="true" property="og:description" content=".*?"\s*\/?>/i, `<meta data-rh="true" property="og:description" content="${description}" />`)
+        .replace(/<meta data-rh="true" property="og:type" content=".*?"\s*\/?>/i, `<meta data-rh="true" property="og:type" content="${type}" />`)
+        .replace(/<meta data-rh="true" property="og:url" content=".*?"\s*\/?>/i, `<meta data-rh="true" property="og:url" content="${canonicalUrl}" />`)
+        .replace(/<meta data-rh="true" name="twitter:title" content=".*?"\s*\/?>/i, `<meta data-rh="true" name="twitter:title" content="${title}" />`)
+        .replace(/<meta data-rh="true" name="twitter:description" content=".*?"\s*\/?>/i, `<meta data-rh="true" name="twitter:description" content="${description}" />`)
+        .replace(/<meta data-rh="true" name="twitter:url" content=".*?"\s*\/?>/i, `<meta data-rh="true" name="twitter:url" content="${canonicalUrl}" />`);
+
+      if (coverImage) {
+        html = html
+          .replace(/<meta data-rh="true" property="og:image" content=".*?"\s*\/?>/i, `<meta data-rh="true" property="og:image" content="${coverImage}" />`)
+          .replace(/<meta data-rh="true" name="twitter:image" content=".*?"\s*\/?>/i, `<meta data-rh="true" name="twitter:image" content="${coverImage}" />`);
+      }
+
+      // Inject JSON-LD if available
+      if (jsonLd) {
+        html = html.replace('</head>', `  <script type="application/ld+json">\n${JSON.stringify(jsonLd, null, 2)}\n</script>\n</head>`);
+      }
+
+      // If in development, let Vite transform the HTML
+      if (process.env.NODE_ENV !== "production") {
+        html = await vite.transformIndexHtml(req.originalUrl, html);
+      }
+      
+      res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+      return;
     } catch (error) {
       console.error("Error fetching SEO data:", error);
     }

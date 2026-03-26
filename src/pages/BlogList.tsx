@@ -12,6 +12,7 @@ import { OptimizedImage } from "../components/OptimizedImage";
 
 import { useStructuredData } from "../hooks/useStructuredData";
 import { blogCache, CACHE_TTL, prefetchBlogPost } from "../utils/cache";
+import { localBlogPosts, LocalBlogPost } from "../data/blogPosts";
 
 interface Post {
   id: string;
@@ -24,6 +25,7 @@ interface Post {
   seoDescription?: string;
   tags?: string[];
   readingTime?: number;
+  isLocal?: boolean;
 }
 
 export default function BlogList() {
@@ -84,14 +86,22 @@ export default function BlogList() {
         );
 
         const snapshot = await getDocs(q);
-        const postsData = snapshot.docs.map((doc) => ({
+        const firestorePosts = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         })) as Post[];
         
+        // Merge local posts
+        const allPostsData = [...localBlogPosts.map(p => ({...p, isLocal: true})), ...firestorePosts]
+          .sort((a, b) => {
+            const timeA = a.createdAt?.toMillis() || 0;
+            const timeB = b.createdAt?.toMillis() || 0;
+            return timeB - timeA;
+          });
+
         // Extract unique tags
         const tags = new Set<string>();
-        postsData.forEach(post => {
+        allPostsData.forEach(post => {
           if (post.tags) {
             post.tags.forEach(tag => tags.add(tag));
           }
@@ -102,7 +112,7 @@ export default function BlogList() {
         const more = snapshot.docs.length === 9;
 
         setAllTags(sortedTags);
-        setPosts(postsData);
+        setPosts(allPostsData);
         setLastVisible(lastDoc);
         setHasMore(more);
         setLoading(false);

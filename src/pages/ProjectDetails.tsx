@@ -40,15 +40,33 @@ export default function ProjectDetails() {
     }
   });
 
+  const canonicalUrl = `https://tghabib.com/project/${project.slug}`;
+
   return (
     <PageTransition>
       <Helmet>
         <title>{project.title} - Case Study | TG Habib</title>
         <meta name="description" content={project.caseStudy.overview} />
-        <meta property="og:title" content={`${project.title} - Case Study`} />
+        <meta name="keywords" content={`${project.title}, case study, ${project.techStack.join(', ')}, web development, portfolio`} />
+        <link rel="canonical" href={canonicalUrl} />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:title" content={`${project.title} - Case Study | TG Habib`} />
         <meta property="og:description" content={project.caseStudy.overview} />
         <meta property="og:image" content={project.landscapeImage || project.image} />
+        <meta property="og:site_name" content="TG Habib" />
+        <meta property="og:locale" content="en_US" />
+
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@tghabib" />
+        <meta name="twitter:url" content={canonicalUrl} />
+        <meta name="twitter:title" content={`${project.title} - Case Study | TG Habib`} />
+        <meta name="twitter:description" content={project.caseStudy.overview} />
+        <meta name="twitter:image" content={project.landscapeImage || project.image} />
+        <meta name="twitter:creator" content="@tghabib" />
       </Helmet>
 
       <main className="relative bg-brand-black text-brand-light selection:bg-brand-orange selection:text-white md:cursor-none">

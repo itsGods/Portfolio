@@ -20,6 +20,7 @@ import { OptimizedImage } from "../components/OptimizedImage";
 import PostReactions from "../components/PostReactions";
 import { getCachedPromise } from "../utils/suspenseCache";
 import { prefetchBlogPost } from "../utils/cache";
+import { localBlogPosts } from "../data/blogPosts";
 
 // Lazy load syntax highlighter to improve performance
 const SyntaxHighlighter = lazy(() => import('react-syntax-highlighter').then(module => ({ default: module.Prism })));
@@ -99,26 +100,35 @@ interface Post {
 }
 
 const fetchPostData = async (slug: string, previewToken: string | null) => {
+  const localPost = localBlogPosts.find(p => p.slug === slug);
+  
   const { collection, query, where, getDocs, orderBy, limit } = await import("firebase/firestore");
   const { db } = await import("../firebase");
 
-  let q;
-  if (previewToken) {
-    q = query(collection(db, "posts"), where("slug", "==", slug), where("previewToken", "==", previewToken));
+  let currentPost: Post | null = null;
+
+  if (localPost) {
+    currentPost = localPost as unknown as Post;
   } else {
-    q = query(collection(db, "posts"), where("slug", "==", slug), where("published", "==", true));
+    let q;
+    if (previewToken) {
+      q = query(collection(db, "posts"), where("slug", "==", slug), where("previewToken", "==", previewToken));
+    } else {
+      q = query(collection(db, "posts"), where("slug", "==", slug), where("published", "==", true));
+    }
+    const snapshot = await getDocs(q);
+    
+    if (!snapshot.empty) {
+      currentPost = { id: snapshot.docs[0].id, ...(snapshot.docs[0].data() as any) } as Post;
+    }
   }
-  const snapshot = await getDocs(q);
-  
-  if (snapshot.empty) {
+
+  if (!currentPost) {
     return { post: null, relatedPosts: [] };
   }
 
-  const docRef = snapshot.docs[0].ref;
-  const currentPost = { id: snapshot.docs[0].id, ...(snapshot.docs[0].data() as any) } as Post;
-
   // Increment view count (only if not preview mode and not viewed in this session)
-  if (!previewToken) {
+  if (!previewToken && !localPost) {
     const viewedKey = `viewed_${currentPost.id}`;
     if (typeof window !== 'undefined' && !localStorage.getItem(viewedKey)) {
       try {
@@ -140,8 +150,14 @@ const fetchPostData = async (slug: string, previewToken: string | null) => {
   const relatedSnapshot = await getDocs(relatedQ);
   const related = relatedSnapshot.docs
     .map(doc => ({ id: doc.id, ...doc.data() } as Post))
-    .filter(p => p.id !== currentPost.id)
+    .filter(p => p.id !== currentPost?.id)
     .slice(0, 3);
+
+  // If no related posts from Firestore, use local posts
+  if (related.length === 0) {
+    const localRelated = localBlogPosts.filter(p => p.id !== currentPost?.id).slice(0, 3);
+    related.push(...(localRelated as unknown as Post[]));
+  }
 
   return { post: currentPost, relatedPosts: related };
 };
